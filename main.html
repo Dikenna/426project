@@ -1,33 +1,37 @@
+
 <!DOCTYPE html>
 <html lang="en">
+<html>
   <head>
-    <title> Let's Sell Some Cocaine </title>
-    <meta charset="UTF-8">
-    <link rel='stylesheet' href="final-style.css"/>
-    <script
-      src="https://code.jquery.com/jquery-3.3.1.min.js"
-      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-      crossorigin="anonymous"></script>
-    <script src="final-script.js"></script>
+    <link href="style.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   </head>
-  <body>
-    <nav class="navbar">
-        <p class="navbar-item"> My Account </p>
-        <p class="navbar-item"> Send </p>
-        <p class="navbar-item"> Receive </p>
-        <p class="navbar-item"> Make Request </p>
-        <div class="input">
-          <input class="rbutton" type="radio" name="gender" value="bright"> Bright <br>
-          <input class="rbutton" type="radio" name="gender" value="dark"> Dark <br>
-        </div>
-    </nav>
 
-    <div class = "main">
+
+  <body>
+    <section id = "navdiv">
+      <nav class="navbar">
+          <a class="navbar-item" id="send">Send</a>
+          <a class="navbar-item" >Receive</a>
+          <a class="navbar-item">Request</a>
+          <a class="navbar-item">My things</a>
+          <a class="navbar-item">Logout</a>
+          <div class="input">
+            <input class="rbutton" type="radio" name="gender" value="bright"> Bright <br>
+            <input class="rbutton" type="radio" name="gender" value="dark"> Dark <br>
+          </div>
+      </nav>
+    </section>
+
+    <section id = "main">
       <div class = "client-items">
         <h1 class = "sent"> Sent </h1>
         <h1 class = "received"> Receive </h1>
         <h1 class = "requests"> Requests </h1>
       </div>
-    </div>
+    </section>
+
+    <script type="text/javascript" src="script.js"></script>
   </body>
+
 </html>
