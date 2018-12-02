@@ -1,5 +1,12 @@
 $(document).ready(function() {
-  let main = $('#main');
+    let main = $('#main');
+    
+    //user creation and authentication that must be done
+    
+    
+    
+    
+    
 
   $("#send").on("click", function(){
     main.empty();
@@ -36,5 +43,25 @@ $(document).ready(function() {
   function newLine(x){
     x.append('<br></br>');
   }
+    
+  $("#receive").on("click", function(){
+    main.empty();
+    newLine(main);
+    
+    let recDiv = $('<div id="receive_div"> Pick Up </div> '); //main holder div for receive section
+    main.append(recDiv);
+    recDiv.append('<input type="text" placeholder="Aiports Near You ..."> </input>'); //will change to drop down of airports or autocomplete - arrival airport on ticket
+    
+    recDiv.append('<h2> Avalible/Unpurchsed Items <h2>');
+    
+    let closetAirport = "RDU"; //whatever value from search bar - placeholder for now
+      
+    
+    
+    
+    
+      
+  });
 
 });
+
