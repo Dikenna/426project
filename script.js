@@ -153,5 +153,37 @@ $(document).ready(function() {
     
       
   });
+	
+	// request page
+  $("#request").on("click", function(){
+    main.empty();
+    newLine(main);
+    main.append('<div id="req_div"> Make a Request! </div> ');
+
+    // Make text boxes with options for user to fill in
+    reqdiv = $('#req_div');
+    newLine(reqdiv);
+    reqdiv.append('<input type="text" placeholder="Send to Airport"> </input>'); //will change to drop down of airports
+    newLine(reqdiv);
+    reqdiv.append('<input type="text" placeholder="What item are you requesting?"> </input>');
+    newLine(reqdiv);
+    reqdiv.append('<input type="text" placeholder="How much are you willing to pay?"> </input>');
+
+    //List of flights going to that airport
+    reqdiv.append('<ul id = "req_flightlist"></ul>');
+    reqFlightList = $('#req_flightlist');
+    reqFlightList.append('<li>Flight 1 here... </li>');
+    reqFlightList.append('<li>Flight 2 here...</li>');
+    reqFlightList.append('<li>Flight 3 here...</li>');
+
+    reqdiv.append('<input type="button" value="REQUEST" id="requestDone"> </input>');
+
+    $('#requestDone').on("click", function(){
+      
+    });
+
+
+  });
+	
 
 });
