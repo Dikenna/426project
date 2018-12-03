@@ -66,3 +66,24 @@ ul{
   border-style: solid;
   border-color: #17202A;
 }
+
+#pass {
+  border-color: black;
+  border-radius: 4px;
+}
+
+#req_flightlist {
+  overflow-y: scroll;
+  height: 300px;
+}
+
+.req {
+  width: 280px;
+}
+
+.input {
+  float: right;
+  font-size: 18px;
+  margin-right: 30px;
+}
+
