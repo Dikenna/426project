@@ -153,5 +153,173 @@ $(document).ready(function() {
     
       
   });
+	
+	
+	
+	// request page
+  $("#request").on("click", function(){
+    main.empty();
+    newLine(main);
+    main.append('<div id="req_div"> Make a Request! </div> ');
+
+    // Make text boxes with options for user to fill in
+    reqdiv = $('#req_div');
+    newLine(reqdiv);
+    let airportInput = $('<input type="text" id="airportInput" class="req" placeholder="Arrival airport"> </input>'); // user types in arrival airport
+    reqdiv.append(airportInput);
+    let airportName = "";
+    airportInput.on("keyup", function() {
+        airportName = $(this).val();
+    });
+
+    newLine(reqdiv);
+    let itemReqNameInput = $('<input type="text" id="itemRequestName" class="req" placeholder="What item are you requesting?"> </input>');
+    reqdiv.append(itemReqNameInput);
+    let itemName = "";
+    itemReqNameInput.on("keyup", function() {
+      itemName = $(this).val();
+    });
+
+    newLine(reqdiv);
+    let priceReqInput = $('<input type="text" id="reqPriceWilling" class="req" placeholder="How much are you willing to pay?"> </input>');
+    reqdiv.append(priceReqInput);
+    let priceWillReq = "";
+    priceReqInput.on("keyup", function() {
+      priceWillReq = $(this).val();
+    });
+
+    //List of flights going to that airport
+    reqdiv.append('<div id = "req_flightlist"></div>');
+    reqFlightList = $('#req_flightlist');
+
+    let airport_id = 87589;
+    let flight;
+
+     let matchArray = [];
+    $.ajax(root_url + "flights", {
+     type: 'GET',
+     dataType: 'json',
+     xhrFields: {withCredentials: true},
+     success: (response) => {
+       let array = response;
+
+       //find correct arrival ids
+       for (let i=0; i<array.length; i++) {
+            if(array[i].arrival_id == airport_id){
+                //get instance of that flight
+                matchArray.push(array[i]);
+              }
+      }
+      let newDiv = $('<div id="pass"></div>');
+      // create text nodes of flight info, radio button to choose one, and append to list div for flights
+      for (let j = 0; j < matchArray.length; j++) {
+          let arrivalid = 87589;
+          let arrivesat = matchArray[j].arrives_at;
+          flight = $('<input class="reqbutton" type="radio" name="flight" value="' + j + '"> Choose this Flight: <br>');
+          let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
+          let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 19));
+          let airText = document.createTextNode("Airport: " + arrivalid);
+          newDiv.append(flight);
+          // newDiv.append(arrdate);
+          // newLine(newDiv);
+          newDiv.append(arrtime);
+          newLine(newDiv);
+          newDiv.append(airText);
+          newLine(newDiv);
+          newLine(newDiv);
+          reqFlightList.append(newDiv);
+          }
+          // give user the option to add a new flight if their preference is not there
+          makeFlight = $('<input class="reqbutton" type="radio" name="flight" value="newFlight"> Choose this Flight: <br>');
+          if ($(".reqbutton").val() == "newFlight") {
+            console.log("here");
+            // option for flight arrival time
+            newLine(newDiv);
+            let arrTimeInput = $('<input type="text" id="arrival_time" class="newflight" placeholder="What item are you requesting?"> </input>');
+            newDiv.append(arrTimeInput);
+            let arrTime = "";
+            arrTimeInput.on("keyup", function() {
+              arrTime = $(this).val();
+            });
+
+            let depTime = "";
+
+            // let flightData = {
+            //   "flight": {
+            //     "departs_at":   arrTime,
+            //     "arrives_at":   arrTime,
+            //     "number":       "AA 2667",
+            //     "plane_id":     2249
+            //     "departure_id": 8,
+            //     "arrival_id":   9
+            //   }
+            // }
+            // POST new flight to API
+          //   $.ajax(root_url + "flights", {
+    	    //    type: 'POST',
+    	    //    dataType: 'json',
+          //    data: flightData,
+    	    //    xhrFields: {withCredentials: true},
+    	    //    success: (response) => {
+          //    }
+          // });
+
+
+          }
+
+      }
+    });
+
+    // final request button
+    reqdiv.append('<input type="button" value="REQUEST" id="requestDone"> </input>');
+
+    // click event for request button -- POST new ticket
+    $('#requestDone').on("click", function(){
+
+      let chosenFlight = matchArray[$(".reqbutton").val()];
+      console.log(chosenFlight);
+      let airport_id = chosenFlight.arrival_id;
+      let flight_id = chosenFlight.id;
+      $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
+             {
+             type: 'GET',
+             dataType: 'json',
+             xhrFields: {withCredentials: true},
+             success: (response) => {
+                 console.log(response);
+                 let instance = response[0]; //array should be exactly one instance
+                 let instance_id = instance.id;
+                 let gender = $(".rbutton").val();
+                 let data =  { "ticket" : {
+                                   "first_name": itemName,
+                                   "middle_name" : "User",
+                                   "last_name": "Request",
+                                   "age" : 1,
+                                   "gender" : gender,
+                                   "is_purchased" : 1.0,
+                                   "price_paid" : priceWillReq,
+                                   "instance_id" : instance_id,
+                                   "seat_id" : 5520
+                                   }
+                               };
+                   console.log(data);
+                  // POST new ticket with given info from user
+                  $.ajax(root_url + "/tickets?" , {
+                        type: 'POST',
+                        dataType: 'json',
+                        data: data,
+                        xhrFields: {withCredentials: true},
+                        success: (response) => {
+                        }
+                   });
+             }
+        });
+    });
+
+
+  });
+
+
+});
 
 });
