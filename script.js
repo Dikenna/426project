@@ -22,9 +22,6 @@ $(document).ready(function() {
         });
     //there is no response for this request (not supposed to be), but I am getting a 204 status code, which is what we're supposed to get, so I guess it works?
     
-    
-    
-
   $("#send").on("click", function(){
     main.empty();
     newLine(main);
@@ -65,24 +62,27 @@ $(document).ready(function() {
     main.empty();
     newLine(main);
     
-    let recDiv = $('<div id="receive_div"> Pick Up </div> '); //main holder div for receive section
+    let recDiv = $('<div id="receive_div"> </div> '); //main holder div for receive section
+    recDiv.append('<h1>Search Unpurchased Items Avalible for Pick Up</h1>');
+      
     main.append(recDiv);
     recDiv.append('<input type="text" placeholder="Aiports Near You ..."> </input>'); //will change to drop down of airports or autocomplete - arrival airport on ticket
     
     let submitr = $("<button id=submit_rec_arrival> Submit </button>");
     recDiv.append(submitr);
       
-    recDiv.append('<h2> Avalible/Unpurchsed Items <h2>');
+    listDiv = $('<div id="list_of_tickets"> </div> '); //all tickts go in here
+    recDiv.append(listDiv);
     
     let closetAirport = "RDU"; //whatever value from search bar - placeholder for now - i will fix
     
       //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
     $("#submit_rec_arrival").on("click", function(){
+        listDiv.empty(); //to prevent duplicates on multiple button clicks
         
         //Gameplan:
         //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
         //once make, these tickets could be sorted or whatever
-        
         
         //get airport id
         let airport_id = 87590;
@@ -99,8 +99,9 @@ $(document).ready(function() {
            for (let i=0; i<array.length; i++) { //filtering workaround
                 if(array[i].arrival_id == airport_id){
                     
+                    let flight = array[i];
                     //get instance of that flight
-                    let flight_id = array[i].id;
+                    let flight_id = flight.id;
                     
                     $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
                        {
@@ -128,11 +129,20 @@ $(document).ready(function() {
                                                 let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> '); 
                                                 //div per ticket - id is "ticketDiv_<ticketID>"
                                             
-                                                recDiv.append(ticketDiv);
+                                                listDiv.append(ticketDiv);
                                             
-                                                //make feilds for ticket request
+                                                //make fields for ticket request
                                                 ticketDiv.append('<div class="itemName">' + tickets[i].first_name + '</div>');
                                                 ticketDiv.append('<div class="itemPrice">'+ "Asking Price: $" + tickets[i].price_paid + '</div>');
+                                                ticketDiv.append('<div class="flightNum">'+ "Flight: " + flight.number + '</div>');
+                                                ticketDiv.append('<div class="arrivalDate">'+ "Arrival Date: " + instance.date + '</div>');
+                                                
+                                                //arrival time string is weird - must be cut up
+                                                let arrTime = flight.arrives_at;
+                                                arrTime = arrTime.slice(11, 16);
+                                            
+                                                ticketDiv.append('<div class="arrivalTime">'+ "Arrival Time: " + arrTime + '</div>');
+                                                        
 
                                         }    
                                         
