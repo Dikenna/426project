@@ -60,3 +60,9 @@ ul{
   height: 100px;
   width: 100%;
 }
+
+.ticketDiv {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #17202A;
+}
