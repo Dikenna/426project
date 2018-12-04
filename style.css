@@ -67,14 +67,16 @@ ul{
   border-color: #17202A;
 }
 
-#pass {
-  border-color: black;
-  border-radius: 4px;
+#req_flightlist {
+  background-color:  #d6dbdf;
+  height: 300px;
+  overflow-y: scroll;
+  width: 50%;
 }
 
-#req_flightlist {
-  overflow-y: scroll;
-  height: 300px;
+#indivFlight {
+  border-radius: 5px;
+  border-color: black;
 }
 
 .req {
