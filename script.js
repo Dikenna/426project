@@ -148,11 +148,24 @@ $(document).ready(function() {
 
 	// request page
   $("#request").on("click", function(){
-
-
     main.empty();
     newLine(main);
     main.append('<div id="req_div"> Make a Request! </div> ');
+
+    $('#bright').prop("checked", true);
+    let gender;
+    $('.rbutton').on('click', function() {
+      gender = $(this).val();
+      if (gender == "dark") {
+        document.getElementById("main").style.backgroundColor = "#282828";
+        document.getElementById("main").style.color = "white";
+        document.getElementById("req_flightlist").style.backgroundColor = "#202020";
+      } else {
+        document.getElementById("main").style.backgroundColor = "white";
+        document.getElementById("main").style.color = "black";
+        document.getElementById("req_flightlist").style.backgroundColor = "#d6dbdf";
+      }
+    });
 
     // Make text boxes with options for user to fill in
     reqdiv = $('#req_div');
@@ -247,7 +260,7 @@ $(document).ready(function() {
           let min = document.getElementsByTagName("option")[minSel].value;
           arrTime = hour + ":" + min;
           console.log(arrTime);
-          let dHour, depTime, depDay;
+          let dHour, depTime, depDay, depYear, depMonth, depDate;
 
           let yearSel = document.getElementById("yearSel").selectedIndex;
           let year = parseInt(document.getElementsByTagName("option")[yearSel].value) + 2018;
@@ -261,6 +274,7 @@ $(document).ready(function() {
           let date = year + "-" + month + "-" + day;
           console.log(date);
 
+          depYear = year;
           // make dep time 3 hours less than arrival
           if (parseInt(hour) < 3) {
             if (parseInt(hour) == 0) {
@@ -270,10 +284,35 @@ $(document).ready(function() {
             } else if (parseInt(hour) == 2) {
               depTime = "23:00";
             }
+            if (parseInt(day) == 1) {
+              if ((parseInt(month) == 2) || (parseInt(month) == 4) || (parseInt(month) == 6) || (parseInt(month) == 8) || (parseInt(month) == 9) || (parseInt(month) == 11)) {
+                depDay = 31;
+                depMonth = month - 1;
+              } else if ((parseInt(month) == 5) || (parseInt(month) == 7) || (parseInt(month) == 10) || (parseInt(month) == 12)){
+                depDay = 30;
+                depMonth = month - 1
+              } else if (parseInt(month) == 3) {
+                if (year == 2019) {
+                  depDay = 28;
+                } else if (year = 2020) {
+                  depDay = 29;
+                }
+                depMonth = 2
+              } else if (parseInt(month) == 1) {
+                depDay = 31;
+                depYear = year - 1;
+                depMonth = 12;
+              }
+            } else {
+              depDay = parseInt(day) - 1;
+            }
           } else {
               dHour = hour - 3;
               depTime = dHour + ":00";
           }
+          depDate = depYear + "-" + depMonth + "-" + depDay;
+
+          console.log(depDate)
 
           // don't allow user to select past days or days that don't exist
           if ((parseInt(year) == 2018 && parseInt(month) < 12) ||  (parseInt(month) == 12 && parseInt(day) < 10)) {
@@ -349,8 +388,7 @@ $(document).ready(function() {
              success: (response) => {
                  let instance = response[0]; //array should be exactly one instance
                  let instance_id = instance.id;
-                 let gender = $(".rbutton").val();
-                 console.log($(".rbutton").val());
+                 console.log(gender);
                  let data =  { "ticket" : {
                                    "first_name": itemName,
                                    "middle_name" : "User",
