@@ -5,6 +5,7 @@
   top: 0;
   width: 100%;
   background-color: #330099;
+  margin-left: -10px;
 }
 
 .navbar a {
@@ -73,6 +74,7 @@ ul{
 /* changes made: */
 
 #req_flightlist {
+  text-align: center;
   background-color:  #d6dbdf;
   height: 300px;
   overflow-y: scroll;
@@ -80,16 +82,25 @@ ul{
 }
 
 #indivFlight {
+  border-style: solid;
   border-radius: 5px;
   border-color: black;
+  margin-bottom: 10px;
 }
 
 .req {
   width: 280px;
 }
 
+.bold{
+  font-weight: bold;
+}
+
 .input {
   float: right;
-  font-size: 18px;
   margin-right: 30px;
+  font-size: 20px;
+  font-weight: bolder;
+  font-style: oblique;
+  color: white;
 }
