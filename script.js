@@ -148,6 +148,8 @@ $(document).ready(function() {
 
 	// request page
   $("#request").on("click", function(){
+
+
     main.empty();
     newLine(main);
     main.append('<div id="req_div"> Make a Request! </div> ');
@@ -178,6 +180,7 @@ $(document).ready(function() {
       priceWillReq = $(this).val();
     });
 
+    newLine(reqdiv);
     //List of flights going to that airport
     reqdiv.append('<div id = "req_flightlist"></div>');
     reqFlightList = $('#req_flightlist');
@@ -210,7 +213,6 @@ $(document).ready(function() {
           flight = $('<input class="reqbutton" type="radio" name="flight" value="' + j + '"> Choose this Flight: <br>');
           let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
           let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
-          // let airText = document.createTextNode("Arrival Airport: " + arrivalid);
           flightDiv.append(flight);
           flightDiv.append(arrtime);
           reqFlightList.append(flightDiv);
@@ -226,45 +228,100 @@ $(document).ready(function() {
 
         // option for flight arrival time
         reqdiv.append(inputDiv);
-        let arrTimeInput = $('<input type="text" id="arrival_time" class="newflight" placeholder="Arrival Time?"> </input>');
-        inputDiv.append(arrTimeInput);
+        addTimeDropdown();
+        addDateDropdown();
         let submitButton = $('<input type="button" value="Submit" id="submitFlight"> </input>');
         inputDiv.append(submitButton);
         newLine(inputDiv);
         newLine(inputDiv);
-        let arrTime = "";
-        arrTimeInput.on("keyup", function() {
-          arrTime = $(this).val();
-        });
-
+        let arrTime
         let depTime;
+
         // let the user submit their own arrival time, making a new flight
         $('#submitFlight').on("click", function() {
-          arrTime = arrTime.slice(NaN, 5);
-          let aHour = arrTime.slice(NaN, 2);
-          let dHour = aHour - 3;
-          depTime = dHour + ":00";
-          let flightData = {
-            "flight": {
-              "departs_at":   depTime,
-              "arrives_at":   arrTime,
-              "number":       "request",
-              "plane_id":     2249,
-              "departure_id": 134212,
-              "arrival_id":   airport_id
-            }
+
+          // get hour, min, year, month, and date from user
+          let hourSel = document.getElementById("hourSel").selectedIndex;
+          let hour = document.getElementsByTagName("option")[hourSel].value;
+          let minSel = document.getElementById("minSel").selectedIndex;
+          let min = document.getElementsByTagName("option")[minSel].value;
+          arrTime = hour + ":" + min;
+          console.log(arrTime);
+          let dHour, depTime, depDay;
+
+          let yearSel = document.getElementById("yearSel").selectedIndex;
+          let year = parseInt(document.getElementsByTagName("option")[yearSel].value) + 2018;
+          let monthSel = document.getElementById("monthSel").selectedIndex;
+          let month = document.getElementsByTagName("option")[monthSel+1].value;
+          let day = document.getElementById("daySel").selectedIndex + 1;
+          // let day = document.getElementsByTagName("option")[daySel+1].value;
+          if (parseInt(day) < 11) {
+            day = "0" + day.toString();
           }
-        // POST new flight to API
-          $.ajax(root_url + "flights", {
-      	     type: 'POST',
-      	     dataType: 'json',
-             data: flightData,
-      	     xhrFields: {withCredentials: true},
-      	     success: (response) => {
-               console.log(response);
-               make_flight_list(reqdiv);
-             }
-          });
+          let date = year + "-" + month + "-" + day;
+          console.log(date);
+
+          // make dep time 3 hours less than arrival
+          if (parseInt(hour) < 3) {
+            if (parseInt(hour) == 0) {
+              depTime = "21:00";
+            } else if (parseInt(hour) == 1) {
+              depTime = "22:00";
+            } else if (parseInt(hour) == 2) {
+              depTime = "23:00";
+            }
+          } else {
+              dHour = hour - 3;
+              depTime = dHour + ":00";
+          }
+
+          // don't allow user to select past days or days that don't exist
+          if ((parseInt(year) == 2018 && parseInt(month) < 12) ||  (parseInt(month) == 12 && parseInt(day) < 10)) {
+            alert("You cannot choose a date that has already passed.");
+          } else if (((parseInt(month) == 2) || (parseInt(month) == 4) || (parseInt(month) == 6) || (parseInt(month) == 9) || (parseInt(month) == 11)) && parseInt(day) == 31)  {
+            alert("This date does not exist.");
+          } else if ((parseInt(year) == 2019 && parseInt(month) == 2 && parseInt(day) > 28) || (parseInt(year) == 2020 && parseInt(month) == 2 && parseInt(day) > 29)) {
+            alert("This date does not exist.");
+          } else {
+            let flightData = {
+              "flight": {
+                "departs_at":   depTime,
+                "arrives_at":   arrTime,
+                "number":       "request",
+                "plane_id":     2249,
+                "departure_id": 134212,
+                "arrival_id":   airport_id
+              }
+            }
+          // POST new flight to API
+            $.ajax(root_url + "flights", {
+               type: 'POST',
+               dataType: 'json',
+               data: flightData,
+               xhrFields: {withCredentials: true},
+               success: (response) => {
+                 console.log(response);
+                 make_flight_list(reqdiv);
+                 // make new instance of the flight
+                 let instanceData = {
+                   "instance" : {
+                     "flight_id": response.id,
+                     "date":      date
+                   }
+                 }
+
+                 $.ajax(root_url + "instances", {
+                   type: 'POST',
+                   dataType: 'json',
+                    data: instanceData,
+                   xhrFields: {withCredentials: true},
+                   success: (response) => {
+                   }
+                 });
+               }
+            }); // end of ajax call for flights
+          }
+
         });
 
       });
@@ -292,8 +349,8 @@ $(document).ready(function() {
              success: (response) => {
                  let instance = response[0]; //array should be exactly one instance
                  let instance_id = instance.id;
-                 let gender = $(".genderbutton").val();
-                 console.log($(".genderbutton").val());
+                 let gender = $(".rbutton").val();
+                 console.log($(".rbutton").val());
                  let data =  { "ticket" : {
                                    "first_name": itemName,
                                    "middle_name" : "User",
@@ -362,6 +419,112 @@ $(document).ready(function() {
       }
   }
   });
+  }
+
+  function addTimeDropdown() {
+    let td = $('<td class="record-value"></td>');
+    $('#newFlightInput').append(td);
+
+    td.append("Arrival Time: ");
+    // add hour dropdown
+    let div = $('<div id="hourDiv" class="form-inline time-view"></div>');
+    let selectTime = $('<select tabindex="0" id="hourSel" class="form-control x-select time-view">');
+    td.append(div);
+    div.append("Hour: ");
+    div.append(selectTime);
+    for (let i = 0; i < 24; i++) {
+      if (i < 10) {
+        let timeOpt = $('<option value="0' + i + '" id="hour0' + i + '" class="x-option time-view"></option>');
+        let text = document.createTextNode("0" + i);
+        timeOpt.append(text);
+        selectTime.append(timeOpt);
+      } else {
+        let timeOpt = $('<option value="' + i + '" id="hour' + i + '" class="x-option time-view"></option>');
+        selectTime.append(timeOpt);
+        let text = document.createTextNode(i);
+        timeOpt.append(text);
+      }
+    }
+
+    // add minute dropdown
+    let minDiv = $('<div id="minDiv" class="form-inline min-view"></div>');
+    let selectMin = $('<select tabindex="0" id="minSel" class="form-control x-select min-view">');
+    td.append(minDiv);
+    minDiv.append("Min: ");
+    minDiv.append(selectMin);
+    for (let i = 0; i < 60; i++) {
+      if (i < 10) {
+        let timeOpt = $('<option value="0' + i + '" id="min0' + i + '" class="x-option min-view"></option>');
+        let text = document.createTextNode("0" + i);
+        timeOpt.append(text);
+        selectMin.append(timeOpt);
+      } else {
+        let timeOpt = $('<option value="' + i + '" id="min' + i + '" class="x-option min-view"></option>');
+        selectMin.append(timeOpt);
+        let text = document.createTextNode(i);
+        timeOpt.append(text);
+      }
+    }
+  }
+
+  function addDateDropdown() {
+    let td = $('<td class="record-value"></td>');
+    $('#newFlightInput').append(td);
+
+    td.append("Arrival Date: ");
+    // add year dropdown
+    let yearDiv = $('<div id="yearDiv" class="form-inline year-view"></div>');
+    let selectYear = $('<select tabindex="0" id="yearSel" class="form-control x-select year-view">');
+    td.append(yearDiv);
+    yearDiv.append("Year: ");
+    yearDiv.append(selectYear);
+    for (let i = 0; i < 3; i++) {
+        let p = 2018 + i;
+        let timeOpt = $('<option value="' + p + '" id="year' + i + '" class="x-option year-view"></option>');
+        selectYear.append(timeOpt);
+        let text = document.createTextNode(p);
+        timeOpt.append(text);
+    }
+
+    // add month dropdown
+    let monthDiv = $('<div id="monthDiv" class="form-inline month-view"></div>');
+    let selectMonth = $('<select tabindex="0" id="monthSel" class="form-control x-select month-view">');
+    td.append(monthDiv);
+    monthDiv.append("Month: ");
+    monthDiv.append(selectMonth);
+    for (let i = 1; i < 13; i++) {
+      if (i < 10) {
+        let timeOpt = $('<option value="0' + i + '" id="month0' + i + '" class="x-option month-view"></option>');
+        let text = document.createTextNode("0" + i);
+        timeOpt.append(text);
+        selectMonth.append(timeOpt);
+      } else {
+        let timeOpt = $('<option value="' + i + '" id="month' + i + '" class="x-option month-view"></option>');
+        selectMonth.append(timeOpt);
+        let text = document.createTextNode(i);
+        timeOpt.append(text);
+      }
+    }
+
+    // add day dropdown
+    let dayDiv = $('<div id="dayDiv" class="form-inline day-view"></div>');
+    let selectDay = $('<select tabindex="0" id="daySel" class="form-control x-select day-view">');
+    td.append(dayDiv);
+    dayDiv.append("Day: ");
+    dayDiv.append(selectDay);
+    for (let i = 1; i < 32; i++) {
+      if (i < 10) {
+        let timeOpt = $('<option value="0' + i + '" id="day0' + i + '" class="x-option min-view"></option>');
+        let text = document.createTextNode("0" + i);
+        timeOpt.append(text);
+        selectDay.append(timeOpt);
+      } else {
+        let timeOpt = $('<option value="' + i + '" id="day' + i + '" class="x-option min-view"></option>');
+        selectDay.append(timeOpt);
+        let text = document.createTextNode(i);
+        timeOpt.append(text);
+      }
+    }
   }
 
 
