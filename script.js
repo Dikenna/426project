@@ -146,23 +146,27 @@ $(document).ready(function() {
     });
   });
 
+
+
+  // olivia
 	// request page
   $("#request").on("click", function(){
     main.empty();
     newLine(main);
     main.append('<div id="req_div"> Make a Request! </div> ');
 
+    // select "gender", if dark, change background color
     $('#bright').prop("checked", true);
-    let gender;
+    let gender = "bright";
     $('.rbutton').on('click', function() {
       gender = $(this).val();
       if (gender == "dark") {
-        document.getElementById("main").style.backgroundColor = "#282828";
-        document.getElementById("main").style.color = "white";
+        document.body.style.backgroundColor = "#282828";
+        document.body.style.color = "white";
         document.getElementById("req_flightlist").style.backgroundColor = "#202020";
       } else {
-        document.getElementById("main").style.backgroundColor = "white";
-        document.getElementById("main").style.color = "black";
+        document.body.style.backgroundColor = "white";
+        document.body.style.color = "black";
         document.getElementById("req_flightlist").style.backgroundColor = "#d6dbdf";
       }
     });
@@ -197,17 +201,17 @@ $(document).ready(function() {
     //List of flights going to that airport
     reqdiv.append('<div id = "req_flightlist"></div>');
     reqFlightList = $('#req_flightlist');
-    // let newDiv = $('<div id="pass"></div>');
 
     let airport_id = 87589;
     let flight;
+    let matchArray = [];
 
-     let matchArray = [];
     $.ajax(root_url + "flights", {
      type: 'GET',
      dataType: 'json',
      xhrFields: {withCredentials: true},
      success: (response) => {
+       // console.log(response);
        let array = response;
 
        //find correct arrival ids
@@ -223,13 +227,28 @@ $(document).ready(function() {
           let flightDiv =  $('<div id="indivFlight"></div>');
           let arrivalid = 87589;
           let arrivesat = matchArray[j].arrives_at;
-          flight = $('<input class="reqbutton" type="radio" name="flight" value="' + j + '"> Choose this Flight: <br>');
-          let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
-          let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
-          flightDiv.append(flight);
-          flightDiv.append(arrtime);
-          reqFlightList.append(flightDiv);
-          reqFlightList.append(flightDiv);
+          let instanceDate;
+
+          // get arrival date
+          $.ajax(root_url + "instances?filter[flight_id]=" + matchArray[j].id,
+                 {
+                 type: 'GET',
+                 dataType: 'json',
+                 xhrFields: {withCredentials: true},
+                 success: (response) => {
+                     instanceDate = response[0].date;
+                     flight = $('<input class="reqbutton" type="radio" name="flight" id="chooseFlight" value="' + j + '"> <div class="bold">Choose this Flight:</div> <br>');
+                     // let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
+                     let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
+                     let arrdate = document.createTextNode("Arrival Date: " + instanceDate.toString());
+                     flightDiv.append(flight);
+                     flightDiv.append(arrdate);
+                     newLine(flightDiv);
+                     flightDiv.append(arrtime);
+                     newLine(flightDiv);
+                     reqFlightList.append(flightDiv);
+                 }
+          });
       }
 
       // give user the option to add a new flight if their preference is not there
@@ -309,9 +328,14 @@ $(document).ready(function() {
           } else {
               dHour = hour - 3;
               depTime = dHour + ":00";
+              depDay = day;
+              depMonth = month;
+              depYear = year;
           }
           depDate = depYear + "-" + depMonth + "-" + depDay;
 
+          console.log(depMonth);
+          console.log(depDay);
           console.log(depDate)
 
           // don't allow user to select past days or days that don't exist
@@ -427,19 +451,21 @@ $(document).ready(function() {
 
      let matchArray = [];
     $.ajax(root_url + "flights", {
-     type: 'GET',
-     dataType: 'json',
-     xhrFields: {withCredentials: true},
-     success: (response) => {
-       let array = response;
+       type: 'GET',
+       dataType: 'json',
+       xhrFields: {withCredentials: true},
+       success: (response) => {
+         console.log(response);
+         let array = response;
 
-       //find correct arrival ids
-       for (let i=0; i<array.length; i++) {
-            if(array[i].arrival_id == airport_id){
-                //get instance of that flight
-                matchArray.push(array[i]);
-              }
-      }
+         //find correct arrival ids
+         for (let i=0; i<array.length; i++) {
+              if(array[i].arrival_id == airport_id){
+                  //get instance of that flight
+                  matchArray.push(array[i]);
+                  console.log(array[i]);
+                }
+        }
 
       // create text nodes of flight info, radio button to choose one, and append to list div for flights
       for (let j = 0; j < matchArray.length; j++) {
@@ -455,8 +481,8 @@ $(document).ready(function() {
           reqFlightList.append(flightDiv);
           reqFlightList.append(flightDiv);
       }
-  }
-  });
+     }
+   });
   }
 
   function addTimeDropdown() {
