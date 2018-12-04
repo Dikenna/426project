@@ -22,6 +22,20 @@ $(document).ready(function() {
         });
     //there is no response for this request (not supposed to be), but I am getting a 204 status code, which is what we're supposed to get, so I guess it works?
     
+    //get list of airports - i put it up here so its avalible for anyone to use
+    let airports = [];
+    $.ajax(root_url + "airports", //unfiltered
+                               {
+                                   type: 'GET',
+                                   dataType: 'json',
+                                   xhrFields: {withCredentials: true},
+                                   success: (response) => {
+                                        airports = response;
+                                   }
+                               });
+    
+    
+
   $("#send").on("click", function(){
     main.empty();
     newLine(main);
@@ -66,19 +80,60 @@ $(document).ready(function() {
     recDiv.append('<h1>Search Unpurchased Items Avalible for Pick Up</h1>');
       
     main.append(recDiv);
-    recDiv.append('<input type="text" placeholder="Aiports Near You ..."> </input>'); //will change to drop down of airports or autocomplete - arrival airport on ticket
+      
+    let formDiv = $('<div></div>');
+    recDiv.append(formDiv);
     
-    let submitr = $("<button id=submit_rec_arrival> Submit </button>");
-    recDiv.append(submitr);
+    let autoCompleteDiv = $('<div class="autocomplete"><input id="myInput" type="text" name="myCountry" placeholder="Airports Near You ..." searchBar></div>');  
+    formDiv.append(autoCompleteDiv);
+      
+    formDiv.append("<button id=submit_rec_arrival> Submit </button>");
       
     listDiv = $('<div id="list_of_tickets"> </div> '); //all tickts go in here
     recDiv.append(listDiv);
     
-    let closetAirport = "RDU"; //whatever value from search bar - placeholder for now - i will fix
+    let searchResult = "";
+    let airportNames = new Array(airports.length);
+        
+    for (let i=0; i < airports.length; i++) {
+        airportNames[i] = airports[i].name + " (" + airports[i].code + ")";
+        
+    }
+
+    let currentAirports =  
+      
+      //autocomplete
+    $('[searchBar]').on("keyup", function() {
     
+        let term = $(this).val().toLowerCase();
+
+            if (term != '') {
+                    for (let i=0; i < airportNames.length; i++) {
+                        if(airportNames[i].includes(term)){
+                            autoCompleteDiv.add();
+                            
+                            
+                            /*
+                            
+<select tabindex="0" id="ember1462" class="form-control x-select ember-view">          <option id="ember1463" class="x-option ember-view">none selected</option>
+<!---->
+</select>      
+                            */
+                            
+                            
+                        } else {
+                            autoCompleteDiv.remove("#dropdown_" + airports[i].code);
+                        }
+                    }
+
+            } else {
+                $(".dropdown").remove();
+            }
+    });
+      
       //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
     $("#submit_rec_arrival").on("click", function(){
-        listDiv.empty(); //to prevent duplicates on multiple button clicks
+        listDiv.empty(); //to prevent duplicates on multiple button click
         
         //Gameplan:
         //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
