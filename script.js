@@ -181,6 +181,7 @@ $(document).ready(function() {
     //List of flights going to that airport
     reqdiv.append('<div id = "req_flightlist"></div>');
     reqFlightList = $('#req_flightlist');
+    // let newDiv = $('<div id="pass"></div>');
 
     let airport_id = 87589;
     let flight;
@@ -200,69 +201,81 @@ $(document).ready(function() {
                 matchArray.push(array[i]);
               }
       }
-      let newDiv = $('<div id="pass"></div>');
+
       // create text nodes of flight info, radio button to choose one, and append to list div for flights
       for (let j = 0; j < matchArray.length; j++) {
+          let flightDiv =  $('<div id="indivFlight"></div>');
           let arrivalid = 87589;
           let arrivesat = matchArray[j].arrives_at;
           flight = $('<input class="reqbutton" type="radio" name="flight" value="' + j + '"> Choose this Flight: <br>');
           let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
-          let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 19));
+          let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
           // let airText = document.createTextNode("Arrival Airport: " + arrivalid);
-          newDiv.append(flight);
-          // newDiv.append(arrdate);
-          // newLine(newDiv);
-          newDiv.append(arrtime);
-          newLine(newDiv);
-          // newDiv.append(airText);
-          // newLine(newDiv);
-          newLine(newDiv);
-          reqFlightList.append(newDiv);
+          flightDiv.append(flight);
+          flightDiv.append(arrtime);
+          reqFlightList.append(flightDiv);
+          reqFlightList.append(flightDiv);
       }
+
       // give user the option to add a new flight if their preference is not there
-      makeFlight = $('<input class="reqbutton" type="radio" name="flight" id="newFlight"> Add New Flight <br>');
-      newDiv.append(makeFlight);
+      let makeFlight = $('<input class="reqbutton" type="radio" name="flight" id="newFlight"> Add New Flight <br>');
+      reqdiv.append(makeFlight);
+      let inputDiv = $('<div id="newFlightInput"></div>');
       $('#newFlight').on("click", function(){
+        inputDiv.empty();
+
         // option for flight arrival time
+        reqdiv.append(inputDiv);
         let arrTimeInput = $('<input type="text" id="arrival_time" class="newflight" placeholder="Arrival Time?"> </input>');
-        newDiv.append(arrTimeInput);
-        newLine(newDiv);
-        newLine(newDiv);
+        inputDiv.append(arrTimeInput);
+        let submitButton = $('<input type="button" value="Submit" id="submitFlight"> </input>');
+        inputDiv.append(submitButton);
+        newLine(inputDiv);
+        newLine(inputDiv);
         let arrTime = "";
         arrTimeInput.on("keyup", function() {
           arrTime = $(this).val();
         });
 
-        let depTime = "";
-
-            // let flightData = {
-            //   "flight": {
-            //     "departs_at":   arrTime,
-            //     "arrives_at":   arrTime,
-            //     "number":       "AA 2667",
-            //     "plane_id":     2249
-            //     "departure_id": 8,
-            //     "arrival_id":   9
-            //   }
-            // }
-            // POST new flight to API
-          //   $.ajax(root_url + "flights", {
-    	    //    type: 'POST',
-    	    //    dataType: 'json',
-          //    data: flightData,
-    	    //    xhrFields: {withCredentials: true},
-    	    //    success: (response) => {
-          //    }
-          // });
-
-
+        let depTime;
+        // let the user submit their own arrival time, making a new flight
+        $('#submitFlight').on("click", function() {
+          arrTime = arrTime.slice(NaN, 5);
+          let aHour = arrTime.slice(NaN, 2);
+          let dHour = aHour - 3;
+          depTime = dHour + ":00";
+          let flightData = {
+            "flight": {
+              "departs_at":   depTime,
+              "arrives_at":   arrTime,
+              "number":       "request",
+              "plane_id":     2249,
+              "departure_id": 134212,
+              "arrival_id":   airport_id
+            }
+          }
+        // POST new flight to API
+          $.ajax(root_url + "flights", {
+      	     type: 'POST',
+      	     dataType: 'json',
+             data: flightData,
+      	     xhrFields: {withCredentials: true},
+      	     success: (response) => {
+               console.log(response);
+               make_flight_list(reqdiv);
+             }
+          });
         });
+
+      });
 
       }
     });
 
     // final request button
-    reqdiv.append('<input type="button" value="REQUEST" id="requestDone"> </input>');
+    let endDiv = $('<div id="endDiv"></div>');
+    reqdiv.after(endDiv);
+    endDiv.append('<input type="button" value="REQUEST" id="requestDone"> </input>');
 
     // click event for request button -- POST new ticket
     $('#requestDone').on("click", function(){
@@ -277,10 +290,10 @@ $(document).ready(function() {
              dataType: 'json',
              xhrFields: {withCredentials: true},
              success: (response) => {
-                 console.log(response);
                  let instance = response[0]; //array should be exactly one instance
                  let instance_id = instance.id;
-                 let gender = $(".rbutton").val();
+                 let gender = $(".genderbutton").val();
+                 console.log($(".genderbutton").val());
                  let data =  { "ticket" : {
                                    "first_name": itemName,
                                    "middle_name" : "User",
@@ -293,7 +306,6 @@ $(document).ready(function() {
                                    "seat_id" : 5520
                                    }
                                };
-                   console.log(data);
                   // POST new ticket with given info from user
                   $.ajax(root_url + "/tickets?" , {
                         type: 'POST',
@@ -301,6 +313,7 @@ $(document).ready(function() {
                         data: data,
                         xhrFields: {withCredentials: true},
                         success: (response) => {
+                          console.log(response);
                         }
                    });
              }
@@ -309,6 +322,47 @@ $(document).ready(function() {
 
 
   });
+
+
+  // function to update flight list when new one is added
+  function make_flight_list(reqdiv) {
+    $('#req_flightlist').empty();
+    let airport_id = 87589;
+    let flight;
+
+     let matchArray = [];
+    $.ajax(root_url + "flights", {
+     type: 'GET',
+     dataType: 'json',
+     xhrFields: {withCredentials: true},
+     success: (response) => {
+       let array = response;
+
+       //find correct arrival ids
+       for (let i=0; i<array.length; i++) {
+            if(array[i].arrival_id == airport_id){
+                //get instance of that flight
+                matchArray.push(array[i]);
+              }
+      }
+
+      // create text nodes of flight info, radio button to choose one, and append to list div for flights
+      for (let j = 0; j < matchArray.length; j++) {
+          let flightDiv =  $('<div id="indivFlight"></div>');
+          let arrivalid = 87589;
+          let arrivesat = matchArray[j].arrives_at;
+          flight = $('<input class="reqbutton" type="radio" name="flight" value="' + j + '"> Choose this Flight: <br>');
+          let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
+          let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
+          // let airText = document.createTextNode("Arrival Airport: " + arrivalid);
+          flightDiv.append(flight);
+          flightDiv.append(arrtime);
+          reqFlightList.append(flightDiv);
+          reqFlightList.append(flightDiv);
+      }
+  }
+  });
+  }
 
 
 });
