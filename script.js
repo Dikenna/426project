@@ -20,22 +20,44 @@ $(document).ready(function() {
                 alert("error");
             }
         });
-    //there is no response for this request (not supposed to be), but I am getting a 204 status code, which is what we're supposed to get, so I guess it works?
 
-    //get list of airports - i put it up here so its avalible for anyone to use
-    let airports = [];
-    $.ajax(root_url + "airports", //unfiltered
-                               {
-                                   type: 'GET',
-                                   dataType: 'json',
-                                   xhrFields: {withCredentials: true},
-                                   success: (response) => {
-                                        airports = response;
-                                   }
-                               });
-
-
-
+        let airports = [];
+        let gender;
+        $.ajax(root_url + "airports", //unfiltered
+                                   {
+                                       type: 'GET',
+                                       dataType: 'json',
+                                       xhrFields: {withCredentials: true},
+                                       success: (response) => {
+                                            airports = response;
+                                       }
+                                   });
+  $('#bright').prop("checked", true);
+  let currentName = "User";
+  $('.rbutton').on('click', function() {
+    gender = $(this).val();
+    make_request_list(gender);
+    if (gender == "dark") {
+      document.body.style.backgroundColor = "#282828";
+      document.body.style.color = "white";
+      if(document.getElementById("req_flightlist")!=null) {
+        document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
+        if (document.getElementById("newFlightInput") != null) {
+          document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
+        }
+      }
+    } else {
+      document.body.style.backgroundColor = "white";
+      document.body.style.color = "black";
+      if(document.getElementById("req_flightlist")!=null) {
+        document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
+        if (document.getElementById("newFlightInput") != null) {
+          document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
+        }
+      }
+    }
+  });
+  // oliiva send page
   $("#send").on("click", function(){
     main.empty();
     newLine(main);
@@ -50,59 +72,47 @@ $(document).ready(function() {
       if (gender == "dark") {
         document.body.style.backgroundColor = "#282828";
         document.body.style.color = "white";
-        document.getElementById("req_flightlist").style.backgroundColor = "#202020";
+        if(document.getElementById("req_flightlist")!=null) {
+          document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
+          if (document.getElementById("newFlightInput") != null) {
+            document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
+          }
+        }
       } else {
         document.body.style.backgroundColor = "white";
         document.body.style.color = "black";
-        document.getElementById("req_flightlist").style.backgroundColor = "#d6dbdf";
+        if(document.getElementById("req_flightlist")!=null) {
+          document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
+          if (document.getElementById("newFlightInput") != null) {
+            document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
+          }
+        }
       }
     });
 
-    //Add a list to request div and populate it with requests.
+    //Add a list to request div and populate it with requests
     requestdiv = $('#request_div');
-    requestdiv.append('<ul id = "requestlist"></ul>');
+    requestlist = $('<div id="requestlist"></div>');
     requestdiv.append(requestlist);
-    make_request_list(requestdiv, gender);
+    make_request_list(gender);
 
     //Populate send div
     senddiv = $('#send_div');
     newLine(senddiv);
-    senddiv.append('<input type="text" placeholder="Send from Airport"> </input>'); //will change to drop down of airports or autocomplete
-    senddiv.append('<input type="text" placeholder="Send to Airport"> </input>'); //will change to drop down of airports
 
-    //List of flights
-    senddiv.append('<ul id = "flightlist"></ul>');
-    flightlist = $('#flightlist');
+    //jess autocomplete
+    let autoCompleteDiv = $('<div class="autocomplete"></div>'); //added jess
 
-    senddiv.append('<input type="text" placeholder="What are you sending?"> </input>');
-    newLine(senddiv);
-    senddiv.append('<input type="button" value="SEND"> </input>');
-  });
+    let airportDepart = $('<input type="text" id="depAirportInput" class="sendAirport" placeholder="Departure Airport" searchBar2> </input>'); //will change to drop down of airports or autocomplete
+    autoCompleteDiv.append(airportDepart);
+    senddiv.append(autoCompleteDiv);
 
-  function newLine(x){
-    x.append('<br></br>');
-  }
+    let airportName = "";
+    airportDepart.on("keyup", function() {
+        airportName = $(this).val();
+    });
 
-//jess - receive page
-  $("#receive").on("click", function(){
-    main.empty();
-    newLine(main);
-
-    let recDiv = $('<div id="receive_div"> </div> '); //main holder div for receive section
-    recDiv.append('<h1>Search Unpurchased Items Avalible for Pick Up</h1>');
-
-    main.append(recDiv);
-
-    let formDiv = $('<div></div>');
-    recDiv.append(formDiv);
-
-    let autoCompleteDiv = $('<div class="autocomplete"><input id="myInput" type="text" name="myCountry" placeholder="Airports Near You ..." searchBar><br></div>');
-    formDiv.append(autoCompleteDiv);
-
-    listDiv = $('<div id="list_of_tickets"> </div> '); //all tickts go in here
-    recDiv.append(listDiv);
-
-    let searchResult = "";
+    //jess helper code
     let airportNames = new Array(airports.length -1);
     let airportsNotCYO = new Array(airports.length -1);
 
@@ -113,126 +123,200 @@ $(document).ready(function() {
         } else {
             airportsNotCYO[j] = airports[j];
             airportNames[j] = airports[j].name + " (" + airports[j].code + ")";
-
             j++;
         }
 
     }
 
-    let currentAirportReceivePage = airportsNotCYO[0];
+    let currentAirportRequestPage = airportsNotCYO[0];
 
-      //autocomplete
-    $('[searchBar]').on("keyup", function() {
+      //autocomplete #2 by jess - slightly different functionality
+      $('[searchBar2]').on("keyup", function() {
+          let term = $(this).val().toLowerCase();
 
-        let term = $(this).val().toLowerCase();
+              if (term != '') {
+                  $(".dropdown").remove();
+                  $(".temp").remove();
+                      for (let i=0; i < airportNames.length; i++) {
+                          let anlc = airportNames[i].toLowerCase();
+                          if(anlc.includes(term)){
+                              autoCompleteDiv.append('<button class="dropdown" id="r_' + airportsNotCYO[i].code + '">' + airportNames[i] + '</button><br class="temp" id="temp_' + airportsNotCYO[i].code + '">');
 
-            if (term != '') {
-                $(".dropdown").remove();
-                $(".temp").remove();
-                    for (let i=0; i < airportNames.length; i++) {
-                        let anlc = airportNames[i].toLowerCase();
-                        if(anlc.includes(term)){
-                            autoCompleteDiv.append('<button class="dropdown" id="' + airportsNotCYO[i].code + '">' + airportNames[i] + '</button><br class="temp" id="temp_' + airportsNotCYO[i].code + '">');
+                              //on dropdown clicks, set current airport
+                              $("#r_" + airportsNotCYO[i].code).on("click", function(){
+                                  currentAirportRequestPage = airportsNotCYO[i];
+                                  airportName = airportsNotCYO[i].name;
+                                  alert(airportName);
 
-                            //on dropdown clicks, set current airport
-                            $("#" + airportsNotCYO[i].code).on("click", function(){
-                                $(".ticketDiv").remove();
+                                  $("#depAirportInput").val(airportsNotCYO[i].name);
+                                  $(".dropdown").remove();
+                                  $(".temp").remove();
 
-                                currentAirportReceivePage = airportsNotCYO[i];
+                                  //remake flight list
+                                  make_flight_list(currentAirportRequestPage.id);
+                              });
+                          } else {
+                              $("#r_" + airportsNotCYO[i].code).remove();
+                              $("#temp_" + airportsNotCYO[i].code).remove();
+                          }
+                      }
+              } else {
+                  $(".dropdown").remove();
+                  $(".temp").remove();
+              }
+      }); //end of autocomplete #2
+      senddiv.append(airportDepart);
 
-                                //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
-                                listDiv.empty(); //to prevent duplicates on multiple button click
 
-                                //Gameplan:
-                                //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
-                                //once make, these tickets could be sorted or whatever
 
-                                //get airport id
-                                let airport_id = currentAirportReceivePage.id;
+    let itemToSendInput = $('<input type="text" placeholder="What are you sending?"> </input>');
+    senddiv.append(itemToSendINput);
+    let itemToSend = "";
+    itemToSendInput.on("keyup", function() {
+      itemToSend = $(this).val();
+    });
 
-                                //get all flights arriving at airport
-                                $.ajax(root_url + "flights", //couldn't get filtering to work for integers on flights?? .... idk fam
+    let askingPriceInput = $('<input type="text" placeholder="How much are you asking for it?"> </input>');
+    senddiv.append(askingPriceInput);
+    let askPrice = 0;
+    askingPriceInput.on("keyup", function() {
+      askPrice = $(this).val();
+    });
+    newLine(senddiv);
+
+    //List of flights
+    senddiv.append('<ul id = "flightlist"></ul>');
+    flightlist = $('#flightlist');
+    make_flightlist_send_page(currentAirportRequestPage.id);
+
+    // click event for send button -- changes ticket to have User be the seller
+    senddiv.append('<input type="button" id=sendPUT" value="SEND ITEM"> </input>');
+    $('#sendPUT').on("click", function() {
+
+    });
+
+    // click event for send button -- adds a flight instance to it if one is not already chosen
+    senddiv.append('<input type="button" id=sendSubmit" value="SEND"> </input>');
+    $('#sendSubmit').on("click", function() {
+
+    });
+
+  });
+
+  function newLine(x){
+    x.append('<br></br>');
+  }
+
+  $("#receive").on("click", function(){
+    main.empty();
+    newLine(main);
+
+    let recDiv = $('<div id="receive_div"> Pick Up </div> '); //main holder div for receive section
+    main.append(recDiv);
+    recDiv.append('<input type="text" placeholder="Airports Near You ..."> </input>'); //will change to drop down of airports or autocomplete - arrival airport on ticket
+
+    let submitr = $("<button id=submit_rec_arrival> Submit </button>");
+    recDiv.append(submitr);
+
+    recDiv.append('<h2> Avalible/Unpurchsed Items <h2>');
+
+    let closetAirport = "RDU"; //whatever value from search bar - placeholder for now - i will fix
+
+      //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
+    $("#submit_rec_arrival").on("click", function(){
+
+        //Gameplan:
+        //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
+        //once make, these tickets could be sorted or whatever
+
+
+        //get airport id
+        let airport_id = 87590;
+
+        //get all flights arriving at airport
+        $.ajax(root_url + "flights", //couldn't get filtering to work for integers on flights?? .... idk fam
+	       {
+	       type: 'GET',
+	       dataType: 'json',
+	       xhrFields: {withCredentials: true},
+	       success: (response) => {
+		       let array = response;
+            //find correct arrival ids
+           for (let i=0; i<array.length; i++) { //filtering workaround
+                if(array[i].arrival_id == airport_id){
+
+                    //get instance of that flight
+                    let flight_id = array[i].id;
+
+                    $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
+                       {
+                           type: 'GET',
+                           dataType: 'json',
+                           xhrFields: {withCredentials: true},
+                           success: (response) => {
+                           let instance = response[0]; //array should be exactly one instance
+
+                            let instance_id = instance.id;
+                           //get tickets of that array
+
+                            $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
                                {
                                    type: 'GET',
                                    dataType: 'json',
                                    xhrFields: {withCredentials: true},
                                    success: (response) => {
-                                   let array = response;
-                                    //find correct arrival ids
-                                   for (let i=0; i<array.length; i++) { //filtering workaround
-                                        if(array[i].arrival_id == airport_id){
+                                    let tickets = response;
+                                    if (tickets.length > 0){//if there exsist tickets
 
-                                            let flight = array[i];
-                                            //get instance of that flight
-                                            let flight_id = flight.id;
+                                        //for each unpurchased ticket make new listing
+                                        for (let i=0; i<tickets.length; i++) {
+                                                let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> ');
+                                                //div per ticket - id is "ticketDiv_<ticketID>"
 
-                                            $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
-                                               {
-                                                   type: 'GET',
-                                                   dataType: 'json',
-                                                   xhrFields: {withCredentials: true},
-                                                   success: (response) => {
-                                                   let instance = response[0]; //array should be exactly one instance
+                                                recDiv.append(ticketDiv);
 
-                                                    let instance_id = instance.id;
-                                                   //get tickets of that array
+                                                //make feilds for ticket request
+                                                ticketDiv.append('<div class="itemName">' + tickets[i].first_name + '</div>');
+                                                ticketDiv.append('<div class="itemPrice">'+ "Asking Price: $" + tickets[i].price_paid + '</div>');
 
-                                                    $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
-                                                       {
-                                                           type: 'GET',
-                                                           dataType: 'json',
-                                                           xhrFields: {withCredentials: true},
-                                                           success: (response) => {
-
-                                                           let tickets = response;
-                                                            if (tickets.length > 0){//if there exsist tickets
-
-                                                                //for each unpurchased ticket make new listing
-                                                                for (let i=0; i<tickets.length; i++) {
-                                                                        let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> ');
-                                                                        //div per ticket - id is "ticketDiv_<ticketID>"
-
-                                                                        listDiv.append(ticketDiv);
-
-                                                                        //make fields for ticket request
-                                                                        ticketDiv.append('<div class="itemName">' + tickets[i].first_name + '</div>');
-                                                                        ticketDiv.append('<div class="itemPrice">'+ "Asking Price: $" + tickets[i].price_paid + '</div>');
-                                                                        ticketDiv.append('<div class="flightNum">'+ "Flight: " + flight.number + '</div>');
-                                                                        ticketDiv.append('<div class="arrivalDate">'+ "Arrival Date: " + instance.date + '</div>');
-
-                                                                        //arrival time string is weird - must be cut up
-                                                                        let arrTime = flight.arrives_at;
-                                                                        arrTime = arrTime.slice(11, 16);
-
-                                                                        ticketDiv.append('<div class="arrivalTime">'+ "Arrival Time: " + arrTime + '</div>');
-                                                                }
-                                                            }
-                                                           }
-                                                       });
-                                                   }
-                                               });
-                                        }
+                                       }
+                                     }
                                    }
-                                   }
-
                                });
-                            });
-
-                        } else {
-                            $("#" + airportsNotCYO[i].code).remove();
-                            $("#temp_" + airportsNotCYO[i].code).remove();
-
-                        }
-                    }
-
-            } else {
-                $(".dropdown").remove();
-                $(".temp").remove();
-            }
+                           }
+                       });
+                }
+           }
+	       }
+	   });
     });
   });
 
-// olivia
+  // $('.rbutton').on('click', function() {
+  //   gender = $(this).val();
+  //   make_request_list(gender);
+  //   if (gender == "dark") {
+  //     document.body.style.backgroundColor = "#282828";
+  //     document.body.style.color = "white";
+  //     if(document.getElementById("req_flightlist")!=null) {
+  //       document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
+  //       if (document.getElementById("newFlightInput") != null) {
+  //         document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
+  //       }
+  //     }
+  //   } else {
+  //     document.body.style.backgroundColor = "white";
+  //     document.body.style.color = "black";
+  //     if(document.getElementById("req_flightlist")!=null) {
+  //       document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
+  //       if (document.getElementById("newFlightInput") != null) {
+  //         document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
+  //       }
+  //     }
+  //   }
+  // });
+
+  // olivia
 	// request page
   $("#request").on("click", function(){
     main.empty();
@@ -255,7 +339,7 @@ $(document).ready(function() {
       }
     });
 
-    // Make text boxes with options for user to fill in - edited by jess for drop down
+    // Make text boxes with options for user to fill in
     reqdiv = $('#req_div');
     newLine(reqdiv);
 
@@ -269,6 +353,7 @@ $(document).ready(function() {
     let airportName = "";
 
     //jess helper code
+    console.log(airports.length);
     let airportNames = new Array(airports.length -1);
     let airportsNotCYO = new Array(airports.length -1);
 
@@ -305,14 +390,13 @@ $(document).ready(function() {
 
                                 currentAirportRequestPage = airportsNotCYO[i];
                                 airportName = airportsNotCYO[i].name;
-                                alert(airportName);
 
                                 $("#airportInput").val(airportsNotCYO[i].name);
                                 $(".dropdown").remove();
                                 $(".temp").remove();
 
                                 //remake flight list
-                                make_flight_list(reqdiv, currentAirportRequestPage);
+                                make_flight_list(currentAirportRequestPage.id);
 
                             });
                         } else {
@@ -326,8 +410,8 @@ $(document).ready(function() {
             }
     }); //end of autocomplete #2
 
-
-    let itemReqNameInput = $('<br><input type="text" id="itemRequestName" class="req" placeholder="What item are you requesting?"> </input>'); //jess changed <br>
+    newLine(reqdiv);
+    let itemReqNameInput = $('<input type="text" id="itemRequestName" class="req" placeholder="What item are you requesting?"> </input>');
     reqdiv.append(itemReqNameInput);
     let itemName = "";
     itemReqNameInput.on("keyup", function() {
@@ -348,52 +432,6 @@ $(document).ready(function() {
     reqFlightList = $('#req_flightlist');
 
     let airport_id = currentAirportRequestPage.id;
-      alert("airport id = " + airport_id);
-    let flight;
-    let matchArray = [];
-
-    $.ajax(root_url + "flights", {
-     type: 'GET',
-     dataType: 'json',
-     xhrFields: {withCredentials: true},
-     success: (response) => {
-       let array = response;
-
-       //find correct arrival ids
-       for (let i=0; i<array.length; i++) {
-            if(array[i].arrival_id == airport_id){
-                //get instance of that flight
-                matchArray.push(array[i]);
-              }
-      }
-
-      // create text nodes of flight info, radio button to choose one, and append to list div for flights
-      for (let j = 0; j < matchArray.length; j++) {
-          let flightDiv =  $('<div id="indivFlight"></div>');
-          let arrivalid = airport_id; //changed - this should be checked if problem arises
-          let arrivesat = matchArray[j].arrives_at;
-          let instanceDate;
-
-          // get arrival date
-          $.ajax(root_url + "instances?filter[flight_id]=" + matchArray[j].id,
-                 {
-                 type: 'GET',
-                 dataType: 'json',
-                 xhrFields: {withCredentials: true},
-                 success: (response) => {
-                     instanceDate = response[0].date;
-                     flight = $('<input class="reqbutton" type="radio" name="flight" id="chooseFlight" value="' + j + '"> <div class="bold">Choose this Flight:</div> <br>');
-                     // let arrdate = document.createTextNode("Arrival Date: " + arrivesat.slice(NaN, 10));
-                     let arrtime = $('<div id=flightArrTime>' + "Arrival Time: " + arrivesat.slice(11, 16) + '</div>');
-                     let arrdate = $('<div id=flightArrDate>' + "Arrival Date: " + instanceDate.toString() + '</div>');
-                     flightDiv.append(flight);
-                     flightDiv.append(arrdate);
-                     flightDiv.append(arrtime);
-                     newLine(flightDiv);
-                     reqFlightList.append(flightDiv);
-                 }
-          });
-      }
 
       // give user the option to add a new flight if their preference is not there
       let makeFlight = $('<input class="reqbutton" type="radio" name="flight" id="newFlight"> Add New Flight <br>');
@@ -410,7 +448,7 @@ $(document).ready(function() {
         inputDiv.append(submitButton);
         newLine(inputDiv);
         newLine(inputDiv);
-        let arrTime
+        let arrTime;
         let depTime;
 
         // let the user submit their own arrival time, making a new flight
@@ -491,8 +529,8 @@ $(document).ready(function() {
                 "departs_at":   depTime,
                 "arrives_at":   arrTime,
                 "number":       "request",
-                "plane_id":     2249, //ok to be hardcoded - everything plane
-                "departure_id": 134212, //ok to be hardcoded - CYO
+                "plane_id":     2249,
+                "departure_id": 134212,
                 "arrival_id":   airport_id
               }
             }
@@ -503,7 +541,7 @@ $(document).ready(function() {
                data: flightData,
                xhrFields: {withCredentials: true},
                success: (response) => {
-                 make_flight_list(reqdiv, currentAirportRequestPage);
+                 make_flight_list(currentAirportRequestPage.id);
                  // make new instance of the flight
                  let instanceData = {
                    "instance" : {
@@ -528,7 +566,10 @@ $(document).ready(function() {
 
       });
 
-      }
+    $('.reqbutton').on('click', function() {
+       console.log("here");
+       chosenFlightValue = $(this).val();
+       console.log(chosenFlightValue);
     });
 
     // final request button
@@ -539,9 +580,12 @@ $(document).ready(function() {
     // click event for request button -- POST new ticket
     $('#requestDone').on("click", function(){
 
-      let chosenFlight = matchArray[$(".reqbutton").val()]; //this is where the problem is - FIX!!
-      console.log("chosenFlight =");
+      // let chosenFlight = matchArray[$(".reqbutton").val()]; // FIX HERE
+      let chosenFlight = $(".reqbutton").val();
+      // console.log(matchArray[$(".reqbutton").val()]);
       console.log(chosenFlight);
+      console.log($(".reqbutton").val());
+
       let airport_id = chosenFlight.arrival_id;
       let flight_id = chosenFlight.id;
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
@@ -562,19 +606,22 @@ $(document).ready(function() {
                                    "is_purchased" : 1.0,
                                    "price_paid" : priceWillReq,
                                    "instance_id" : instance_id,
-                                   "seat_id" : 5520 //ok - seat 11 on everything plane
+                                   "seat_id" : 5520
                                    }
-                               };
-                  // POST new ticket with given info from user
-                  $.ajax(root_url + "/tickets?" , {
-                        type: 'POST',
-                        dataType: 'json',
-                        data: data,
-                        xhrFields: {withCredentials: true},
-                        success: (response) => {
-                          console.log(response);
-                        }
-                   });
+                               }
+                  if (itemName != "" && priceWillReq != "" && airport_id != "") {
+                    // POST new ticket with given info from user
+                    $.ajax(root_url + "/tickets?" , {
+                          type: 'POST',
+                          dataType: 'json',
+                          data: data,
+                          xhrFields: {withCredentials: true},
+                          success: (response) => {
+                          }
+                     });
+                 } else {
+                   alert("Please fill in all input boxes to make a request.");
+                 }
              }
         });
     });
@@ -582,42 +629,9 @@ $(document).ready(function() {
 
   });
 
-	// request page
-  $("#request").on("click", function(){
-    main.empty();
-    newLine(main);
-    main.append('<div id="req_div"> Make a Request! </div> ');
-
-    // Make text boxes with options for user to fill in
-    reqdiv = $('#req_div');
-    newLine(reqdiv);
-    reqdiv.append('<input type="text" placeholder="Send to Airport"> </input>'); //will change to drop down of airports
-    newLine(reqdiv);
-    reqdiv.append('<input type="text" placeholder="What item are you requesting?"> </input>');
-    newLine(reqdiv);
-    reqdiv.append('<input type="text" placeholder="How much are you willing to pay?"> </input>');
-
-    //List of flights going to that airport
-    reqdiv.append('<ul id = "req_flightlist"></ul>');
-    reqFlightList = $('#req_flightlist');
-    reqFlightList.append('<li>Flight 1 here... </li>');
-    reqFlightList.append('<li>Flight 2 here...</li>');
-    reqFlightList.append('<li>Flight 3 here...</li>');
-
-    reqdiv.append('<input type="button" value="REQUEST" id="requestDone"> </input>');
-
-    $('#requestDone').on("click", function(){
-
-    });
-
-
-  });
-
   // function to load request list
-  function make_request_list(requestdiv, gender) {
-    // requestdiv.empty();
-    $('#request_list').empty();
-    let request;
+  function make_request_list(gender) {
+    $('#requestlist').empty();
     let matchArray = [];
 
     $.ajax(root_url + "tickets", {
@@ -626,13 +640,17 @@ $(document).ready(function() {
        xhrFields: {withCredentials: true},
        success: (response) => {
          let array = response;
-         //find all requests where middle name is not the User and gender is correct
+         //find all requests where middle/last name is not the User and gender is correct
          for (let i = 0; i < array.length; i++ ) {
-           if (array[i].gender == gender && array[i].middle_name != "User") {
-             matchArray.push(array[i]);
+           if (array[i].gender == gender && !array[i].last_name.includes("User") && array[i].is_purchased == true) {
+            if (array[i].middle_name.includes("User")){
+              //nothing
+            } else {
+              matchArray.push(array[i]);
+            }
+
            }
          }
-
       // create text nodes of flight info, radio button to choose one, and append to list div for flights
       for (let j = 0; j < matchArray.length; j++) {
           let reqListDiv = $('<div id="indivRequest"></div>');
@@ -644,20 +662,32 @@ $(document).ready(function() {
                  dataType: 'json',
                  xhrFields: {withCredentials: true},
                  success: (response) => {
-                     let flight_id = response[j].flight_id;
-                     let dep_date = response[j].date;
-                     // // GET flight
-                     $.ajax(root_url + "flights?filter[id]=" + flight_id, {
+                   let instarray = response;
+                   let flight_id, dep_date;
+                   // match the ticket with its instance object
+                   for (let p = 0; p < instarray.length; p++) {
+                     if (instarray[p].id == matchArray[j].instance_id) {
+                       flight_id = instarray[p].flight_id;
+                       dep_date = instarray[p].date;
+                     }
+                   }
+                       // GET flight
+                       $.ajax(root_url + "flights?filter[id]=" + flight_id, {
                               type: 'GET',
                               dataType: 'json',
                               xhrFields: {withCredentials: true},
                               success: (response) => {
-                                let flight = response[j];
-                                let dep_time = flight.departs_at;
-                                let dep_id = flight.departure_id;
-                                // console.log(dep_id);
-                     //            // GET instance
-                                $.ajax(root_url + "airports?", {
+                                let flightarray = response;
+                                let dep_time, dep_id;
+                                // match the ticket with its flight object
+                                for (let m = 0; m < flightarray.length; m++) {
+                                  if (instarray[m].id == matchArray[j].instance_id) {
+                                    dep_time = flightarray[m].departs_at;
+                                    dep_id = flightarray[m].departure_id;
+                                  }
+                                }
+                       //            // GET airport
+                                  $.ajax(root_url + "airports?", {
                                          type: 'GET',
                                          dataType: 'json',
                                          xhrFields: {withCredentials: true},
@@ -684,19 +714,21 @@ $(document).ready(function() {
                                             }
                                         }
                                });
+                             // }
                            }
                       });
-                 }
+                    // }
+                 }  // instance end
           });
-      }
+      }  // end of for loop for matcharray
      }
    });
   }
 
   // function to update flight list when new one is added
-  function make_flight_list(reqdiv, wantedAirport) {
+  function make_flight_list(airportid) {
     $('#req_flightlist').empty();
-    let airport_id = wantedAirport.id; //check this is out of scope
+    let airport_id = airportid;
     let flight;
 
      let matchArray = [];
@@ -713,22 +745,91 @@ $(document).ready(function() {
               if(array[i].arrival_id == airport_id){
                   //get instance of that flight
                   matchArray.push(array[i]);
-                  console.log(array[i]);
                 }
         }
 
       // create text nodes of flight info, radio button to choose one, and append to list div for flights
       for (let j = 0; j < matchArray.length; j++) {
           let flightDiv =  $('<div id="indivFlight"></div>');
-          let arrivalid = airport_id; //changed
+          let arrivalid = airport_id;
           let arrivesat = matchArray[j].arrives_at;
-          flight = $('<input class="reqbutton" type="radio" name="flight" value="' + j + '"> Choose this Flight: <br>');
-          let arrdate = $('<div id=flightArrDate>' + "Arrival Date: " + arrivesat.slice(NaN, 10) + '</div>');
-          let arrtime = $('<div id=flightArrTime>' + "Arrival Time: " + arrivesat.slice(11, 16) + '</div>');
-          flightDiv.append(flight);
-          flightDiv.append(arrtime);
-          reqFlightList.append(flightDiv);
+          let instanceDate;
+
+          // get arrival date
+          $.ajax(root_url + "instances?filter[flight_id]=" + matchArray[j].id,
+             {
+             type: 'GET',
+             dataType: 'json',
+             xhrFields: {withCredentials: true},
+             success: (response) => {
+               instanceDate = response[0].date;
+               flight = $('<input class="reqbutton" type="radio" name="flight" id="chooseFlight" value="' +
+               j + '"> <label class="bold">Choose this Flight:</label> <br>');
+               let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
+               let arrdate = document.createTextNode("Arrival Date: " + instanceDate.toString());
+               flightDiv.append(flight);
+               flightDiv.append(arrdate);
+               newLine(flightDiv);
+               flightDiv.append(arrtime);
+               newLine(flightDiv);
+               reqFlightList.append(flightDiv);
+             }
+          });
       }
+     }
+   });
+  }
+
+  function make_flightlist_send_page(airportid) {
+    $('#flightlist').empty();
+    let airport_id = airportid;
+    let flight;
+
+     let matchArray = [];
+    $.ajax(root_url + "flights", {
+       type: 'GET',
+       dataType: 'json',
+       xhrFields: {withCredentials: true},
+       success: (response) => {
+         console.log(response);
+         let array = response;
+
+         //find correct arrival ids
+         for (let i=0; i<array.length; i++) {
+              if(array[i].departure_id == airport_id){
+                  //get instance of that flight
+                  matchArray.push(array[i]);
+                }
+        }
+
+        // create text nodes of flight info, radio button to choose one, and append to list div for flights
+        for (let j = 0; j < matchArray.length; j++) {
+            let flightDiv =  $('<div id="indivFlight"></div>');
+            let departureid = airport_id;
+            let departsat = matchArray[j].arrives_at;
+            let instanceDate;
+
+            // get date
+            $.ajax(root_url + "instances?filter[flight_id]=" + matchArray[j].id,
+               {
+               type: 'GET',
+               dataType: 'json',
+               xhrFields: {withCredentials: true},
+               success: (response) => {
+                 instanceDate = response[0].date;
+                 flight = $('<input class="reqbutton" type="radio" name="flight" id="chooseFlight" value="' +
+                 j + '"> <label class="bold">Choose this Flight:</label> <br>');
+                 let deptime = document.createTextNode("Departure Time: " + departsat.slice(11, 16));
+                 let depdate = document.createTextNode("Departure Date: " + instanceDate.toString());
+                 flightDiv.append(flight);
+                 flightDiv.append(depdate);
+                 newLine(flightDiv);
+                 flightDiv.append(deptime);
+                 newLine(flightDiv);
+                 flightlist.append(flightDiv);
+               }
+            });
+        }
      }
    });
   }
@@ -838,5 +939,157 @@ $(document).ready(function() {
       }
     }
   }
+
+
+  //jess - receive page
+ $("#receive").on("click", function(){
+   main.empty();
+   newLine(main);
+
+   let recDiv = $('<div id="receive_div"> </div> '); //main holder div for receive section
+   recDiv.append('<h1>Search Unpurchased Items Avalible for Pick Up</h1>');
+
+   main.append(recDiv);
+
+   let formDiv = $('<div></div>');
+   recDiv.append(formDiv);
+
+   let autoCompleteDiv = $('<div class="autocomplete"><input id="myInput" type="text" name="myCountry" placeholder="Airports Near You ..." searchBar><br></div>');
+   formDiv.append(autoCompleteDiv);
+
+   listDiv = $('<div id="list_of_tickets"> </div> '); //all tickts go in here
+   recDiv.append(listDiv);
+
+   let searchResult = "";
+   let airportNames = new Array(airports.length -1);
+   let airportsNotCYO = new Array(airports.length -1);
+
+   let j = 0;
+   for (let i=0; i < airports.length; i++) {
+       if (airports[j].code == "CYO"){
+           //do nothing - we don't want to include this one
+       } else {
+           airportsNotCYO[j] = airports[j];
+           airportNames[j] = airports[j].name + " (" + airports[j].code + ")";
+
+           j++;
+       }
+
+   }
+
+   let currentAirportReceivePage = airportsNotCYO[0];
+
+     //autocomplete
+   $('[searchBar]').on("keyup", function() {
+
+       let term = $(this).val().toLowerCase();
+
+           if (term != '') {
+               $(".dropdown").remove();
+               $(".temp").remove();
+                   for (let i=0; i < airportNames.length; i++) {
+                       let anlc = airportNames[i].toLowerCase();
+                       if(anlc.includes(term)){
+                           autoCompleteDiv.append('<button class="dropdown" id="' + airportsNotCYO[i].code + '">' + airportNames[i] + '</button><br class="temp" id="temp_' + airportsNotCYO[i].code + '">');
+
+                           //on dropdown clicks, set current airport
+                           $("#" + airportsNotCYO[i].code).on("click", function(){
+                               $(".ticketDiv").remove();
+
+                               currentAirportReceivePage = airportsNotCYO[i];
+
+                               //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
+                               listDiv.empty(); //to prevent duplicates on multiple button click
+
+                               //Gameplan:
+                               //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
+                               //once make, these tickets could be sorted or whatever
+
+                               //get airport id
+                               let airport_id = currentAirportReceivePage.id;
+
+                               //get all flights arriving at airport
+                               $.ajax(root_url + "flights", //couldn't get filtering to work for integers on flights?? .... idk fam
+                              {
+                                  type: 'GET',
+                                  dataType: 'json',
+                                  xhrFields: {withCredentials: true},
+                                  success: (response) => {
+                                  let array = response;
+                                   //find correct arrival ids
+                                  for (let i=0; i<array.length; i++) { //filtering workaround
+                                       if(array[i].arrival_id == airport_id){
+
+                                           let flight = array[i];
+                                           //get instance of that flight
+                                           let flight_id = flight.id;
+
+                                           $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
+                                              {
+                                                  type: 'GET',
+                                                  dataType: 'json',
+                                                  xhrFields: {withCredentials: true},
+                                                  success: (response) => {
+                                                  let instance = response[0]; //array should be exactly one instance
+
+                                                   let instance_id = instance.id;
+                                                  //get tickets of that array
+
+                                                   $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
+                                                      {
+                                                          type: 'GET',
+                                                          dataType: 'json',
+                                                          xhrFields: {withCredentials: true},
+                                                          success: (response) => {
+
+                                                          let tickets = response;
+                                                           if (tickets.length > 0){//if there exsist tickets
+
+                                                               //for each unpurchased ticket make new listing
+                                                               for (let i=0; i<tickets.length; i++) {
+                                                                       let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> ');
+                                                                       //div per ticket - id is "ticketDiv_<ticketID>"
+
+                                                                       listDiv.append(ticketDiv);
+
+                                                                       //make fields for ticket request
+                                                                       ticketDiv.append('<div class="itemName">' + tickets[i].first_name + '</div>');
+                                                                       ticketDiv.append('<div class="itemPrice">'+ "Asking Price: $" + tickets[i].price_paid + '</div>');
+                                                                       ticketDiv.append('<div class="flightNum">'+ "Flight: " + flight.number + '</div>');
+                                                                       ticketDiv.append('<div class="arrivalDate">'+ "Arrival Date: " + instance.date + '</div>');
+
+                                                                       //arrival time string is weird - must be cut up
+                                                                       let arrTime = flight.arrives_at;
+                                                                       arrTime = arrTime.slice(11, 16);
+
+                                                                       ticketDiv.append('<div class="arrivalTime">'+ "Arrival Time: " + arrTime + '</div>');
+                                                               }
+                                                           }
+                                                          }
+                                                      });
+                                                  }
+                                              });
+                                       }
+                                  }
+                                  }
+
+                              });
+                           });
+
+                       } else {
+                           $("#" + airportsNotCYO[i].code).remove();
+                           $("#temp_" + airportsNotCYO[i].code).remove();
+
+                       }
+                   }
+
+           } else {
+               $(".dropdown").remove();
+               $(".temp").remove();
+           }
+   });
+ });
+
+
 
 });
