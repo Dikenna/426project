@@ -1,7 +1,3 @@
-body{
-    overflow: hidden;
-}
-
 .navbar {
   overflow: hidden;
   height: 50px;
@@ -123,6 +119,10 @@ ul{
 }
 
 #myInput {
+    width: 346px;
+}
+
+.req {
     width: 346px;
 }
 
