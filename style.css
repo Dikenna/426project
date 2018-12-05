@@ -103,4 +103,41 @@ ul{
   font-weight: bolder;
   font-style: oblique;
   color: white;
+
+}
+
+.dropdown {
+    width: 350px;
+    background:none;
+    background-color: #ddd;
+    border-style: none;
+    
+}
+
+.dropdown:hover {
+    background-color: #330099;
+    color: white;
+}
+
+#myInput {
+    width: 346px;
+}
+
+.req {
+    width: 346px;
+}
+
+/*on receive page*/
+#list_of_tickets{
+    height: 300px;
+    overflow-y: scroll;
+}
+
+/*on receive page*/
+.ticketDiv{ 
+  border-style: solid;
+  border-radius: 5px;
+  border-color: black;
+  margin-bottom: 5px;
+
 }
