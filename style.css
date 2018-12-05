@@ -4,21 +4,26 @@
   position: fixed;
   top: 0;
   width: 100%;
+  background-color: #330099;
+  margin-left: -10px;
 }
 
 .navbar a {
     float: left;
-    color: black;
+    /* color: black; */
+    color: white;
     text-align: center;
     padding: 14px 16px;
     font-family: 'Alegreya Sans SC', sans-serif;
     font-weight: 300;
     font-size: 20px;
+
 }
 
 .navbar p {
     float: right;
-    color: #f2f2f2;
+    /* color: #f2f2f2; */
+    color: white;
     text-align: center;
     padding-right: 16px;
     font-family: 'Alegreya Sans SC', sans-serif;
@@ -34,6 +39,11 @@
 .navbar a.active {
     background-color: #4CAF50;
     color: white;
+}
+
+.rbutton{
+  float: left;
+  color: white;
 }
 
 #request_div{
@@ -58,7 +68,76 @@ ul{
   overflow: hidden;
   overflow-y:scroll;
   height: 100px;
-  width: 100%;
+  width: 80%;
+}
+
+/* changes made: */
+
+#req_flightlist {
+  text-align: center;
+  background-color:  #d6dbdf;
+  height: 300px;
+  overflow-y: scroll;
+  width: 50%;
+}
+
+#indivFlight {
+  border-style: solid;
+  border-radius: 5px;
+  border-color: black;
+  margin-bottom: 10px;
+}
+
+.req {
+  width: 280px;
+}
+
+.bold{
+  font-weight: bold;
+}
+
+.input {
+  float: right;
+  margin-right: 30px;
+  font-size: 20px;
+  font-weight: bolder;
+  font-style: oblique;
+  color: white;
+}
+
+.dropdown {
+    width: 350px;
+    background:none;
+    background-color: #ddd;
+    border-style: none;
+    
+}
+
+.dropdown:hover {
+    background-color: #330099;
+    color: white;
+}
+
+#myInput {
+    width: 346px;
+}
+
+.req {
+    width: 346px;
+}
+
+/*on receive page*/
+#list_of_tickets{
+    height: 300px;
+    overflow-y: scroll;
+}
+
+/*on receive page*/
+.ticketDiv{ 
+  border-style: solid;
+  border-radius: 5px;
+  border-color: black;
+  margin-bottom: 5px;
 }
 
 .ticketDiv {
