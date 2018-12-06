@@ -113,7 +113,7 @@ $(document).ready(function() {
 
 
 
-
+  // fulfill page
   $('#fulfill').on("click", function() {
     main.empty();
     newLine(main);
@@ -151,7 +151,7 @@ $(document).ready(function() {
     make_request_list(gender);
     $('#request_div').append('<input type="button" id="sendUpdate" value="SEND ITEM"> </input>');
 
-    // click event for send button -- PATCH ticket to have User be the seller
+    // click event for fulfill button -- PATCH ticket to have User be the seller
     $('#sendUpdate').on("click", function() {
       let data = { "ticket": {"last_name": currentName } }
         // .requestButton is the class name for the radio button
@@ -301,8 +301,7 @@ $(document).ready(function() {
     senddiv.append('<input type="button" id="sendSubmit" value="SEND"> </input>');
 
     $('#sendSubmit').on("click", function() {
-      // jess! look here      
-      // the beginning of this click function code is not really working correctly -- jess was looking into it
+      // keep everything in here -- this fixed the glitch
         let airport_id = currentAirportRequestPage.id;
         let flight_id = $('.flightButtonSend').val();
 
@@ -436,30 +435,6 @@ $(document).ready(function() {
 	   });
     });
   });
-
-  // $('.rbutton').on('click', function() {
-  //   gender = $(this).val();
-  //   make_request_list(gender);
-  //   if (gender == "dark") {
-  //     document.body.style.backgroundColor = "#282828";
-  //     document.body.style.color = "white";
-  //     if(document.getElementById("req_flightlist")!=null) {
-  //       document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
-  //       if (document.getElementById("newFlightInput") != null) {
-  //         document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
-  //       }
-  //     }
-  //   } else {
-  //     document.body.style.backgroundColor = "white";
-  //     document.body.style.color = "black";
-  //     if(document.getElementById("req_flightlist")!=null) {
-  //       document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
-  //       if (document.getElementById("newFlightInput") != null) {
-  //         document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
-  //       }
-  //     }
-  //   }
-  // });
 
   // olivia
 	// request page
@@ -724,13 +699,10 @@ $(document).ready(function() {
 
     // click event for request button -- POST new ticket
     $('#requestDone').on("click", function(){
-      // jess! look here
-      // the beginning of this click function code is not really working correctly -- jess was looking into it
+      // keep everything in here -- this fixed the glitch
       let airport_id = currentAirportRequestPage.id;
       let flight_id = $('.flightButtonReq').val();
-      console.log("flight_id: ");
-      console.log(flight_id);
-      console.log(airport_id);
+
       // keep this part though:
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
              {
@@ -905,7 +877,6 @@ $(document).ready(function() {
       for (let j = 0; j < matchArray.length; j++) {
           let flightDiv =  $('<div id="indivFlight"></div>');
           currentFlightId = matchArray[j].id;
-          console.log(currentFlightId); // jess! currentflightid should be the value of the radio button but it is not updating
           let arrivalid = airport_id;
           let arrivesat = matchArray[j].arrives_at;
           let instanceDate;
@@ -917,19 +888,15 @@ $(document).ready(function() {
              dataType: 'json',
              xhrFields: {withCredentials: true},
              success: (response) => {
+               // keep everything in here -- this fixed the glitch
+               currentFlightId = response[0].flight_id;
                instanceDate = response[0].date;
-               flight = $('<input class="flightButtonReq" type="radio" name="flight" id="chooseFlight" value="' +
+               flight = $('<input class="flightButtonReq" type="radio" name="flight" id="'+ response[0].flight_id + '" value="' +
                currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
-               $('.flightButtonReq').on("click", function() {
-                 console.log("value:");
-                 // console.log($(this).val());
-                 console.log(currentFlightId);
-               });
-               let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
-               let arrdate = document.createTextNode("Arrival Date: " + instanceDate.toString());
+               let arrtime = $('<div id="arrTime">' + "Arrival Time: " + arrivesat.slice(11, 16) + '</div>');
+               let arrdate = $('<div id="arrDate">' + "Arrival Date: " + instanceDate.toString() + '</div>');
                flightDiv.append(flight);
                flightDiv.append(arrdate);
-               newLine(flightDiv);
                flightDiv.append(arrtime);
                newLine(flightDiv);
                $('#req_flightlist').append(flightDiv);
@@ -977,14 +944,15 @@ $(document).ready(function() {
                dataType: 'json',
                xhrFields: {withCredentials: true},
                success: (response) => {
+                 // keep everything in here -- this fixed the glitch
+                 currentFlightId = response[0].flight_id;
                  instanceDate = response[0].date;
-                 flight = $('<input class="flightButtonSend" type="radio" name="flight" id="chooseFlight" value="' +
+                 flight = $('<input class="flightButtonSend" type="radio" name="flight" id="'+ response[0].flight_id +'" value="' +
                  currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
-                 let deptime = document.createTextNode("Departure Time: " + departsat.slice(11, 16));
-                 let depdate = document.createTextNode("Departure Date: " + instanceDate.toString());
+                 let deptime = $('<div id="depTime">' + "Departure Time: " + departsat.slice(11, 16) + '</div>');
+                 let depdate = $('<div id="depDate">' + "Departure Date: " + instanceDate.toString() + '</div>');
                  flightDiv.append(flight);
                  flightDiv.append(depdate);
-                 newLine(flightDiv);
                  flightDiv.append(deptime);
                  newLine(flightDiv);
                  flightlist.append(flightDiv);
