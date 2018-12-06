@@ -109,14 +109,14 @@ ul{
   font-size: 20px;
 }
 
-
 .req {
-  width: 280px;
+  width: 350px;
   background-color: rgba(245, 245, 245, 0.5);
   font-family: 'Josefin Slab', Serif;
   font-weight: 400;
   font-size: 20px;
   margin:5px 0;
+  display:inline;
   padding:3px;
 }
 
@@ -179,6 +179,75 @@ input[type=button], input[type=submit], input[type=reset] {
   margin: 4px 2px;
   cursor: pointer;
   font-size: 15px;
+}
+
+.dropdown {
+    width: 350px;
+    font-family: 'Josefin Slab', Serif;
+    font-size: 18px;
+    background:none;
+    background-color: #ddd;
+    border-style: none;
+}
+
+.dropdown:hover {
+    background-color: #330099;
+    color: white;
+}
+
+/*on receive page*/
+#list_of_tickets{
+  height: 400px;
+  overflow-y: scroll;
+  padding: 100px 0;
+}
+
+/*on receive page*/
+.ticketDiv{
+  border-radius: 50px;
+  border-bottom: 3px solid rgba(0,0,0,0.2);
+  margin-bottom: 10px;
+  background-color: rgba(245, 245, 245, 0.5);
+  font-family: 'Alegreya Sans SC', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+#receive_div{
+  background: url('airport1.jpg');
+  background-size:cover;
+  background-position:center;
+  height:100vh;
+  display:flex;
+}
+
+#airport_div{
+  text-align: center;
+  float: left;
+  width: 50%;
+  height: 100vh;
+  background-color: rgba(245, 245, 245, 0.5);
+}
+
+#items_div{
+  text-align: center;
+  float: right;
+  width: 50%;
+  height: 100vh;
+  background-color: rgba(220, 220, 245, 0.5);
+}
+
+#search_airport{
+  font-family: 'Josefin Slab', Serif;
+  font-size: 30px;
+}
+
+#myInput {
+  background-color: rgba(245, 245, 245, 0.5);
+  font-family: 'Josefin Slab', Serif;
+  font-size: 20px;
+  width:70%;
+  padding: 10px;
 }
 
 
