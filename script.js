@@ -35,12 +35,14 @@ $(document).ready(function() {
                                    });
   $('#bright').prop("checked", true);
   let currentGenderVal = "bright";
+  let currentAirportReceivePage = airports[0]; //added jess
   
   let currentName = "User";
   $('.rbutton').on('click', function() {
     gender = $(this).val();
     currentGenderVal = gender; //added jess
     make_request_list(gender);
+    make_receive_list(currentAirportReceivePage); //added jess
     if (gender == "dark") {
       document.body.style.backgroundColor = "#282828";
       document.body.style.color = "white";
@@ -754,7 +756,7 @@ $(document).ready(function() {
                                                 indivTick.append(depTime);
                                                 indivTick.append(depAir);
                                                 newLine(indivTick);
-                                                requestlist.append(indivTick);
+                                                $('#requestlist').append(indivTick);
                                               }
                                             }
                                         }
@@ -769,6 +771,117 @@ $(document).ready(function() {
      }
    });
   }
+    
+  // function: repopulate receive list - new WORKING ON THIS
+  function make_receive_list(currentAirportReceivePage) {
+    listDiv.empty(); //to prevent duplicates on multiple button click
+
+     //Gameplan:
+     //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
+     //once make, these tickets could be sorted or whatever
+
+     //get airport id
+     let airport_id = currentAirportReceivePage.id;
+
+     //get all flights arriving at airport
+     $.ajax(root_url + "flights", //couldn't get filtering to work for integers on flights?? .... idk fam
+    {
+        type: 'GET',
+        dataType: 'json',
+        xhrFields: {withCredentials: true},
+        success: (response) => {
+        let array = response;
+         //find correct arrival ids
+        for (let i=0; i<array.length; i++) { //filtering workaround
+             if(array[i].arrival_id == airport_id){
+
+                 let flight = array[i];
+                 //get instance of that flight
+                 let flight_id = flight.id;
+
+                 $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
+                    {
+                        type: 'GET',
+                        dataType: 'json',
+                        xhrFields: {withCredentials: true},
+                        success: (response) => {
+                        let instance = response[0]; //array should be exactly one instance
+
+                         let instance_id = instance.id;
+                        //get tickets of that array
+
+                         $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[gender]=" + currentGenderVal + "&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
+                            {
+                                type: 'GET',
+                                dataType: 'json',
+                                xhrFields: {withCredentials: true},
+                                success: (response) => { //populate receive page ticket div
+
+                                let tickets = response;
+                                 if (tickets.length > 0){//if there exsist tickets
+
+                                     //for each unpurchased ticket make new listing
+                                     for (let i=0; i<tickets.length; i++) {
+                                             let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> ');
+                                             //div per ticket - id is "ticketDiv_<ticketID>"
+
+                                             listDiv.append(ticketDiv);
+
+
+
+                                             //make fields for ticket request
+                                             ticketDiv.append('<div class="itemName">' + tickets[i].first_name + '</div>');
+                                             ticketDiv.append('<div class="itemPrice">'+ "Asking Price: $" + tickets[i].price_paid + '</div>');
+                                             ticketDiv.append('<div class="flightNum">'+ "Flight: " + flight.number + '</div>');
+                                             ticketDiv.append('<div class="arrivalDate">'+ "Arrival Date: " + instance.date + '</div>');
+
+
+                                             //arrival time string is weird - must be cut up
+                                             let arrTime = flight.arrives_at;
+                                             arrTime = arrTime.slice(11, 16);
+
+                                             ticketDiv.append('<div class="arrivalTime">'+ "Arrival Time: " + arrTime + '</div>');
+
+                                             //add purchase button
+                                             let buyButton = $('<button class="buyButton" id="' + tickets[i].id + '">PURCHASE</button>');
+                                             ticketDiv.append(buyButton);
+
+                                             $("#" + tickets[i].id).on("click", function(){
+                                                    let data = { "ticket": 
+                                                                {
+                                                                    "middle_name": currentName, 
+                                                                    "is_purchased": 1.0
+                                                                } 
+                                                               }
+
+                                                    $.ajax(root_url + "tickets/" + tickets[i].id, {
+                                                      type: 'PATCH',
+                                                      dataType: 'json',
+                                                      data: data,
+                                                      xhrFields: {withCredentials: true},
+                                                      success: (response) => {
+                                                        // delete item
+                                                        $("#ticketDiv_" + tickets[i].id).remove();
+
+                                                      }
+                                                    });
+                                             });
+                                     }
+                                 }
+                                }
+                            });
+                        }
+                    });
+             }
+        }
+        }
+
+    });
+      
+      
+      
+      
+  };
 
   // function to update flight list when new one is added
   function make_flight_list(airportid) {
@@ -1034,7 +1147,7 @@ $(document).ready(function() {
 
    }
 
-   let currentAirportReceivePage = airportsNotCYO[0];
+   currentAirportReceivePage = airportsNotCYO[0];
    
    
 
@@ -1058,81 +1171,10 @@ $(document).ready(function() {
                                  currentAirportReceivePage = airportsNotCYO[i];
 
                                  //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
-                                 listDiv.empty(); //to prevent duplicates on multiple button click
-
-                                 //Gameplan:
-                                 //get all flights arriving at airpot, get all instances of these planes, get unpurchased tickets of those instances, make new listing for each ticket
-                                 //once make, these tickets could be sorted or whatever
-
-                                 //get airport id
-                                 let airport_id = currentAirportReceivePage.id;
-
-                                 //get all flights arriving at airport
-                                 $.ajax(root_url + "flights", //couldn't get filtering to work for integers on flights?? .... idk fam
-                                {
-                                    type: 'GET',
-                                    dataType: 'json',
-                                    xhrFields: {withCredentials: true},
-                                    success: (response) => {
-                                    let array = response;
-                                     //find correct arrival ids
-                                    for (let i=0; i<array.length; i++) { //filtering workaround
-                                         if(array[i].arrival_id == airport_id){
-
-                                             let flight = array[i];
-                                             //get instance of that flight
-                                             let flight_id = flight.id;
-
-                                             $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
-                                                {
-                                                    type: 'GET',
-                                                    dataType: 'json',
-                                                    xhrFields: {withCredentials: true},
-                                                    success: (response) => {
-                                                    let instance = response[0]; //array should be exactly one instance
-
-                                                     let instance_id = instance.id;
-                                                    //get tickets of that array
-
-                                                     $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
-                                                        {
-                                                            type: 'GET',
-                                                            dataType: 'json',
-                                                            xhrFields: {withCredentials: true},
-                                                            success: (response) => {
-
-                                                            let tickets = response;
-                                                             if (tickets.length > 0){//if there exsist tickets
-
-                                                                 //for each unpurchased ticket make new listing
-                                                                 for (let i=0; i<tickets.length; i++) {
-                                                                         let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> ');
-                                                                         //div per ticket - id is "ticketDiv_<ticketID>"
-
-                                                                         listDiv.append(ticketDiv);
-
-                                                                         //make fields for ticket request
-                                                                         ticketDiv.append('<div class="itemName">' + tickets[i].first_name + '</div>');
-                                                                         ticketDiv.append('<div class="itemPrice">'+ "Asking Price: $" + tickets[i].price_paid + '</div>');
-                                                                         ticketDiv.append('<div class="flightNum">'+ "Flight: " + flight.number + '</div>');
-                                                                         ticketDiv.append('<div class="arrivalDate">'+ "Arrival Date: " + instance.date + '</div>');
-
-                                                                         //arrival time string is weird - must be cut up
-                                                                         let arrTime = flight.arrives_at;
-                                                                         arrTime = arrTime.slice(11, 16);
-
-                                                                         ticketDiv.append('<div class="arrivalTime">'+ "Arrival Time: " + arrTime + '</div>');
-                                                                 }
-                                                             }
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                         }
-                                    }
-                                    }
-
-                                });
+                                 
+                                 //this code was moved to a function call to enable it to be called elsewhere
+                                 make_receive_list(currentAirportReceivePage);
+                                 
                              });
 
                          } else {
