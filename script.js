@@ -301,9 +301,12 @@ $(document).ready(function() {
     senddiv.append('<input type="button" id="sendSubmit" value="SEND"> </input>');
 
     $('#sendSubmit').on("click", function() {
-      // jess! look here
+      // jess! look here      
+      // the beginning of this click function code is not really working correctly -- jess was looking into it
         let airport_id = currentAirportRequestPage.id;
         let flight_id = $('.flightButtonSend').val();
+
+        // keep this part
         $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
                {
                type: 'GET',
@@ -722,11 +725,13 @@ $(document).ready(function() {
     // click event for request button -- POST new ticket
     $('#requestDone').on("click", function(){
       // jess! look here
+      // the beginning of this click function code is not really working correctly -- jess was looking into it
       let airport_id = currentAirportRequestPage.id;
       let flight_id = $('.flightButtonReq').val();
       console.log("flight_id: ");
       console.log(flight_id);
       console.log(airport_id);
+      // keep this part though:
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
              {
              type: 'GET',
