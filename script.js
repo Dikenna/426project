@@ -23,7 +23,6 @@ $(document).ready(function() {
 
         let airports = [];
         let gender;
-        let ticketCount = 0;
         let currentRequestRadioVal = 0;
         $.ajax(root_url + "airports", //unfiltered
                                    {
@@ -101,7 +100,6 @@ $(document).ready(function() {
 
 
     // click event for send button -- PATCH ticket to have User be the seller
-    // hey jess copy this
     $('#sendUpdate').on("click", function() {
       let data = { "ticket": {"last_name": currentName } }
         // .requestButton is the class name for the radio button
@@ -211,9 +209,49 @@ $(document).ready(function() {
     make_flightlist_send_page(currentAirportRequestPage.id);
 
     // click event for send button -- adds a flight instance to it if one is not already chosen
-    senddiv.append('<input type="button" id=sendSubmit" value="SEND"> </input>');
-    $('#sendSubmit').on("click", function() {
+    senddiv.append('<input type="button" id="sendSubmit" value="SEND"> </input>');
 
+    $('#sendSubmit').on("click", function() {
+      // jess! look here
+        let airport_id = currentAirportRequestPage.id;
+        let flight_id = $('.flightButtonSend').val();
+        $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
+               {
+               type: 'GET',
+               dataType: 'json',
+               xhrFields: {withCredentials: true},
+               success: (response) => {
+                 console.log(response);
+                 let instance = response[0]; //array should be exactly one instance
+                 let instance_id = instance.id;
+                 console.log(gender);
+                 let data =  { "ticket" : {
+                                   "first_name": itemToSend,
+                                   "middle_name" : "",
+                                   "last_name": currentName,
+                                   "age" : 1,
+                                   "gender" : gender,
+                                   "is_purchased" : 0.0,
+                                   "price_paid" : askPrice,
+                                   "instance_id" : instance_id,
+                                   "seat_id" : 5520
+                                   }
+                               }
+                  if (itemToSend != "" && askPrice != "" && airport_id != "") {
+                    // POST new ticket with given info from user
+                    $.ajax(root_url + "/tickets?" , {
+                          type: 'POST',
+                          dataType: 'json',
+                          data: data,
+                          xhrFields: {withCredentials: true},
+                          success: (response) => {
+                          }
+                     });
+                 } else {
+                   alert("Please fill in all input boxes to make a request.");
+                 }
+               }
+        });
     });
 
   });
@@ -594,15 +632,12 @@ $(document).ready(function() {
 
     // click event for request button -- POST new ticket
     $('#requestDone').on("click", function(){
-
-      let chosenFlight = matchArray[$(".reqbutton").val()]; // FIX HERE
-      // let chosenFlight = $(".reqbutton").val();
-      console.log(matchArray[$(".reqbutton").val()]);
-      // console.log(chosenFlight);
-      console.log($(".reqbutton").val());
-
-      let airport_id = chosenFlight.arrival_id;
-      let flight_id = chosenFlight.id;
+      // jess! look here
+      let airport_id = currentAirportRequestPage.id;
+      let flight_id = $('.flightButtonReq').val();
+      console.log("flight_id: ");
+      console.log(flight_id);
+      console.log(airport_id);
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
              {
              type: 'GET',
@@ -611,7 +646,8 @@ $(document).ready(function() {
              success: (response) => {
                  let instance = response[0]; //array should be exactly one instance
                  let instance_id = instance.id;
-                 console.log(gender);
+                 console.log("instance_id:");
+                 console.log(instance_id);
                  let data =  { "ticket" : {
                                    "first_name": itemName,
                                    "middle_name" : "User",
@@ -632,6 +668,7 @@ $(document).ready(function() {
                           data: data,
                           xhrFields: {withCredentials: true},
                           success: (response) => {
+                            $('#request').click();
                           }
                      });
                  } else {
@@ -647,7 +684,6 @@ $(document).ready(function() {
   // function to load request list
   function make_request_list(gender) {
     $('#requestlist').empty();
-    ticketCount = 0;
     currentRequestRadioVal = 0;
     let matchArray = [];
     let instanceID, currentID;
@@ -678,6 +714,7 @@ $(document).ready(function() {
           let reqListDiv = $('<div id="indivRequest"></div>');
           instanceID = matchArray[j].instance_id;
           currentID = matchArray[j].id;
+          console.log(currentID);
           let firstName = matchArray[j].first_name;
           let pricePay = matchArray[j].price_paid;
           $.ajax(root_url + "instances?filter[id]=" + matchArray[j].instance_id,
@@ -721,8 +758,6 @@ $(document).ready(function() {
                                               if (airport.id == dep_id) {
                                                 let indivTick = $('<div id="indivTicket_' + currentID + '"></div>');
                                                 let requestButton = $('<input class="requestButton" type="radio" name="request" value="' + currentID + '"> Fulfill this Request: <br>');
-
-                                                console.log(ticketCount);
                                                 let item = $('<div id="itemName">' + "Item Requested: " + firstName + '</div>');
                                                 let compPrice = $('<div id="compPrice">' + "Compensation Price: $" + pricePay + '</div>');
                                                 let depDate = $('<div id="depDate">' + "Departure Date: " + dep_date + '</div>');
@@ -735,8 +770,7 @@ $(document).ready(function() {
                                                 indivTick.append(depTime);
                                                 indivTick.append(depAir);
                                                 newLine(indivTick);
-                                                requestlist.append(indivTick);
-                                                ticketCount++;
+                                                $('#requestlist').append(indivTick);
                                               }
                                             }
                                         }
@@ -754,7 +788,7 @@ $(document).ready(function() {
   function make_flight_list(airportid) {
     $('#req_flightlist').empty();
     let airport_id = airportid;
-    let flight;
+    let flight, currentflightId;
 
      let matchArray = [];
     $.ajax(root_url + "flights", {
@@ -776,6 +810,8 @@ $(document).ready(function() {
       // create text nodes of flight info, radio button to choose one, and append to list div for flights
       for (let j = 0; j < matchArray.length; j++) {
           let flightDiv =  $('<div id="indivFlight"></div>');
+          currentFlightId = matchArray[j].id;
+          console.log(currentFlightId); // jess! currentflightid should be the value of the radio button but it is not updating
           let arrivalid = airport_id;
           let arrivesat = matchArray[j].arrives_at;
           let instanceDate;
@@ -789,7 +825,12 @@ $(document).ready(function() {
              success: (response) => {
                instanceDate = response[0].date;
                flight = $('<input class="flightButtonReq" type="radio" name="flight" id="chooseFlight" value="' +
-               j + '"> <label class="bold">Choose this Flight:</label> <br>');
+               currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
+               $('.flightButtonReq').on("click", function() {
+                 console.log("value:");
+                 // console.log($(this).val());
+                 console.log(currentFlightId);
+               });
                let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
                let arrdate = document.createTextNode("Arrival Date: " + instanceDate.toString());
                flightDiv.append(flight);
@@ -797,7 +838,7 @@ $(document).ready(function() {
                newLine(flightDiv);
                flightDiv.append(arrtime);
                newLine(flightDiv);
-               reqFlightList.append(flightDiv);
+               $('#req_flightlist').append(flightDiv);
              }
           });
       }
@@ -808,9 +849,9 @@ $(document).ready(function() {
   function make_flightlist_send_page(airportid) {
     $('#flightlist').empty();
     let airport_id = airportid;
-    let flight;
+    let flight, currentFlightId;
 
-     let matchArray = [];
+    let matchArray = [];
     $.ajax(root_url + "flights", {
        type: 'GET',
        dataType: 'json',
@@ -825,13 +866,14 @@ $(document).ready(function() {
                   //get instance of that flight
                   matchArray.push(array[i]);
                 }
-        }
+         }
 
         // create text nodes of flight info, radio button to choose one, and append to list div for flights
         for (let j = 0; j < matchArray.length; j++) {
             let flightDiv =  $('<div id="indivFlight"></div>');
+            currentFlightId = matchArray[j].id;
             let departureid = airport_id;
-            let departsat = matchArray[j].arrives_at;
+            let departsat = matchArray[j].departs_at;
             let instanceDate;
 
             // get date
@@ -843,7 +885,7 @@ $(document).ready(function() {
                success: (response) => {
                  instanceDate = response[0].date;
                  flight = $('<input class="flightButtonSend" type="radio" name="flight" id="chooseFlight" value="' +
-                 j + '"> <label class="bold">Choose this Flight:</label> <br>');
+                 currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
                  let deptime = document.createTextNode("Departure Time: " + departsat.slice(11, 16));
                  let depdate = document.createTextNode("Departure Date: " + instanceDate.toString());
                  flightDiv.append(flight);
