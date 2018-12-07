@@ -22,9 +22,7 @@ $(document).ready(function() {
         });
 
         let airports = [];
-        let radioButtonRequest = [];
         let gender;
-        let currentRequestRadioVal = 0;
         $.ajax(root_url + "airports", //unfiltered
                                    {
                                        type: 'GET',
@@ -756,7 +754,6 @@ $(document).ready(function() {
   // function to load request list
     function make_request_list(gender) {
       $('#requestlist').empty();
-      currentRequestRadioVal = 0;
       let matchArray = [];
       let instanceID, currentID;
 
@@ -975,7 +972,6 @@ $(document).ready(function() {
   // function to update flight list when new one is added
   function make_flight_list(airportid) {
     $('#req_flightlist').empty();
-    radioButtonRequest = [];
     let airport_id = airportid;
     let flight, currentflightId;
     let matchArray = [];
@@ -1013,7 +1009,6 @@ $(document).ready(function() {
              success: (response) => {
                // keep everything in here -- this fixed the glitch
                let inst = response[0];
-               radioButtonRequest.push(inst);
                currentFlightId = inst.flight_id;
                instanceDate = inst.date;
                console.log(currentFlightId);
