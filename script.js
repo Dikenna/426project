@@ -1,9 +1,32 @@
 $(document).ready(function() {
 
     let main = $('#main');
-    $("#home").click();
+    
+    var root_url = "http://comp426.cs.unc.edu:3001/"; //moved
+    
+    $('#bright').prop("checked", true); //moved
+
+    let currentGenderVal = "bright"; //moved
+    
+    //make send page home page
+    main.append($('<div class = "client-items"></div>'));
+    $('.client-items').append($('<h1 class = "sell"> Up For Sale </h1>'));
+    $('.sell').append($('<div id="upForSale"></div>'));
+    make_upForSale_list(currentGenderVal, root_url);
+
+    $('.client-items').append($('<h1 class= "fulfill"> Fulfilled Requests </h1>'));
+    $('.fulfill').append($('<div id="fulfilledReq"></div>'));
+    make_fulfilled_list(currentGenderVal, root_url);
+
+    $('.client-items').append($('<h1 class = "ordered"> Ordered </h1>'));
+    $('.ordered').append($('<div id="order"></div>'));
+    make_order_list(currentGenderVal, root_url);
+
+    $('.client-items').append($('<h1 class = "requestsMade"> Requests Made </h1>'));
+    $('.requestsMade').append($('<div id="requestsMade"></div>'));
+    make_requestMade_list(currentGenderVal, root_url);
+    
     //user authentication that must be done - if we wanted to make a seperate login page we could, but i feel like its not necessary? - this will just log the "website" into the correct database (the one we created) each time
-    var root_url = "http://comp426.cs.unc.edu:3001/";
 
     //request from browser for authentication cookie from server
     $.ajax(root_url + '/sessions',
@@ -33,9 +56,7 @@ $(document).ready(function() {
                                             airports = response;
                                        }
                                    });
-  $('#bright').prop("checked", true);
-
-  let currentGenderVal = "bright";
+  
   let currentAirportReceivePage = airports[0]; //added jess
 
   let currentName = "User";
@@ -43,10 +64,10 @@ $(document).ready(function() {
     gender = $(this).val();
     make_request_list(gender);
     make_receive_list(currentAirportReceivePage); //added jess
-    make_upForSale_list(gender);
-    make_fulfilled_list(gender);
-    make_order_list(gender);
-    make_requestMade_list(gender);
+    make_upForSale_list(gender, root_url);
+    make_fulfilled_list(gender, root_url);
+    make_order_list(gender, root_url);
+    make_requestMade_list(gender, root_url);
 
     if (gender == "dark") {
       document.body.style.backgroundColor = "#282828";
@@ -101,19 +122,19 @@ $(document).ready(function() {
     main.append($('<div class = "client-items"></div>'));
     $('.client-items').append($('<h1 class = "sell"> Up For Sale </h1>'));
     $('.sell').append($('<div id="upForSale"></div>'));
-    make_upForSale_list(gender);
+    make_upForSale_list(gender, root_url);
 
     $('.client-items').append($('<h1 class= "fulfill"> Fulfilled Requests </h1>'));
     $('.fulfill').append($('<div id="fulfilledReq"></div>'));
-    make_fulfilled_list(gender);
+    make_fulfilled_list(gender, root_url);
 
     $('.client-items').append($('<h1 class = "ordered"> Ordered </h1>'));
     $('.ordered').append($('<div id="order"></div>'));
-    make_order_list(gender);
+    make_order_list(gender, root_url);
 
     $('.client-items').append($('<h1 class = "requestsMade"> Requests Made </h1>'));
     $('.requestsMade').append($('<div id="requestsMade"></div>'));
-    make_requestMade_list(gender);
+    make_requestMade_list(gender, root_url);
 
   });
 
@@ -1323,9 +1344,9 @@ $("#pokemonButton").on("click", function(){ //third party api
  });
 
  // populate the up for sale items on my things page
- function make_upForSale_list(gender) {
+ function make_upForSale_list(gender, root_url) {
    $('#upForSale').empty();
-
+     
    $.ajax(root_url + "tickets?filter[is_purchased]=0.0", //filtering ajax request on tickets
       {
           type: 'GET',
@@ -1391,7 +1412,7 @@ $("#pokemonButton").on("click", function(){ //third party api
  }
 
  // populate the fulfilled items on my things page
- function make_fulfilled_list(gender) {
+ function make_fulfilled_list(gender, root_url) {
    $('#fulfilledReq').empty();
 
    $.ajax(root_url + "tickets?filter[is_purchased]=1.0", //filtering ajax request on tickets
@@ -1459,7 +1480,7 @@ $("#pokemonButton").on("click", function(){ //third party api
  }
 
  // populate the ordered items on my things page
- function make_order_list(gender) {
+ function make_order_list(gender, root_url) {
    $('#order').empty();
 
    $.ajax(root_url + "tickets?filter[is_purchased]=1.0", //filtering ajax request on tickets
@@ -1527,7 +1548,7 @@ $("#pokemonButton").on("click", function(){ //third party api
  }
 
  // populate the requests made for items on my things page
- function make_requestMade_list(gender) {
+ function make_requestMade_list(gender, root_url) {
    $('#requestsMade').empty();
 
    $.ajax(root_url + "tickets?filter[is_purchased]=1.0", //filtering ajax request on tickets
