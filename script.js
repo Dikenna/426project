@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
     let main = $('#main');
-
+    $("#home").click();
     //user authentication that must be done - if we wanted to make a seperate login page we could, but i feel like its not necessary? - this will just log the "website" into the correct database (the one we created) each time
     var root_url = "http://comp426.cs.unc.edu:3001/";
 
@@ -21,28 +21,35 @@ $(document).ready(function() {
             }
         });
 
-
         let airports = [];
+        let radioButtonRequest = [];
         let gender;
+        let currentRequestRadioVal = 0;
         $.ajax(root_url + "airports", //unfiltered
                                    {
                                        type: 'GET',
                                        dataType: 'json',
                                        xhrFields: {withCredentials: true},
                                        success: (response) => {
+                                         console.log(response);
                                             airports = response;
                                        }
                                    });
   $('#bright').prop("checked", true);
+
   let currentGenderVal = "bright";
   let currentAirportReceivePage = airports[0]; //added jess
-  
+
   let currentName = "User";
   $('.rbutton').on('click', function() {
     gender = $(this).val();
-    currentGenderVal = gender; //added jess
     make_request_list(gender);
     make_receive_list(currentAirportReceivePage); //added jess
+    make_upForSale_list(gender);
+    make_fulfilled_list(gender);
+    make_order_list(gender);
+    make_requestMade_list(gender);
+
     if (gender == "dark") {
       document.body.style.backgroundColor = "#282828";
       document.body.style.color = "white";
@@ -63,17 +70,118 @@ $(document).ready(function() {
       }
     }
   });
-  
-    
-  
 
-  //dikenna send page
+  $('#home').on("click", function() {
+    main.empty();
+    $('.client-items').empty();
 
-  $("#send").on("click", function(){
+    $('#bright').prop("checked", true);
+    let gender = "bright";
+    $('.rbutton').on('click', function() {
+      gender = $(this).val();
+      if (gender == "dark") {
+        document.body.style.backgroundColor = "#282828";
+        document.body.style.color = "white";
+        if(document.getElementById("req_flightlist")!=null) {
+          document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
+          if (document.getElementById("newFlightInput") != null) {
+            document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
+          }
+        }
+      } else {
+        document.body.style.backgroundColor = "white";
+        document.body.style.color = "black";
+        if(document.getElementById("req_flightlist")!=null) {
+          document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
+          if (document.getElementById("newFlightInput") != null) {
+            document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
+          }
+        }
+      }
+    });
+
+    main.append($('<div class = "client-items"></div>'));
+    $('.client-items').append($('<h1 class = "sell"> Up For Sale </h1>'));
+    $('.sell').append($('<div id="upForSale"></div>'));
+    make_upForSale_list(gender);
+
+    $('.client-items').append($('<h1 class= "fulfill"> Fulfilled Requests </h1>'));
+    $('.fulfill').append($('<div id="fulfilledReq"></div>'));
+    make_fulfilled_list(gender);
+
+    $('.client-items').append($('<h1 class = "ordered"> Ordered </h1>'));
+    $('.ordered').append($('<div id="order"></div>'));
+    make_order_list(gender);
+
+    $('.client-items').append($('<h1 class = "requestsMade"> Requests Made </h1>'));
+    $('.requestsMade').append($('<div id="requestsMade"></div>'));
+    make_requestMade_list(gender);
+
+  });
+
+
+
+  // fulfill page
+  $('#fulfill').on("click", function() {
     main.empty();
     newLine(main);
-    main.append('<div id="request_div"> Current Requests </div> '); //left float request div
-    main.append('<div id="send_div"> Send a package! </div> '); //right float send package div
+    main.append('<div id="request_div"> Current Requests: </div> ');
+
+    // select "gender", if dark, change background color
+    $('#bright').prop("checked", true);
+    let gender = "bright";
+    $('.rbutton').on('click', function() {
+      gender = $(this).val();
+      if (gender == "dark") {
+        document.body.style.backgroundColor = "#282828";
+        document.body.style.color = "white";
+        if(document.getElementById("req_flightlist")!=null) {
+          document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
+          if (document.getElementById("newFlightInput") != null) {
+            document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
+          }
+        }
+      } else {
+        document.body.style.backgroundColor = "white";
+        document.body.style.color = "black";
+        if(document.getElementById("req_flightlist")!=null) {
+          document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
+          if (document.getElementById("newFlightInput") != null) {
+            document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
+          }
+        }
+      }
+    });
+
+    requestdiv = $('#request_div');
+    requestlist = $('<div id="requestlist"></div>');
+    requestdiv.append(requestlist);
+    make_request_list(gender);
+    $('#request_div').append('<input type="button" id="sendUpdate" value="SEND ITEM"> </input>');
+
+    // click event for fulfill button -- PATCH ticket to have User be the seller
+    $('#sendUpdate').on("click", function() {
+      let data = { "ticket": {"last_name": currentName } }
+        // .requestButton is the class name for the radio button
+        $.ajax(root_url + "tickets/" + $('.requestButton').val(), {
+          type: 'PATCH',
+          dataType: 'json',
+          data: data,
+          xhrFields: {withCredentials: true},
+          success: (response) => {
+            // re-populates request list
+            make_request_list(gender);
+          }
+        });
+    });
+  });
+
+  // up for sale page
+  $("#sell").on("click", function(){
+    main.empty();
+    newLine(main);
+    main.append('<div id="send_div"> Send a package! </div> ');
+    $('#flightlist').empty();
 
     // select "gender", if dark, change background color
     $('#bright').prop("checked", true);
@@ -102,11 +210,6 @@ $(document).ready(function() {
     });
 
     //Add a list to request div and populate it with requests
-    requestdiv = $('#request_div');
-    requestlist = $('<div id="requestlist"></div>');
-    requestdiv.append(requestlist);
-    make_request_list(gender);
-
     //Populate send div
     senddiv = $('#send_div');
     newLine(senddiv);
@@ -119,9 +222,9 @@ $(document).ready(function() {
     senddiv.append(autoCompleteDiv);
 
     let airportName = "";
-    airportDepart.on("keyup", function() {
-        airportName = $(this).val();
-    });
+    // airportDepart.on("keyup", function() {
+    //     airportName = $(this).val();
+    // });
 
     //jess helper code
     let airportNames = new Array(airports.length -1);
@@ -157,14 +260,14 @@ $(document).ready(function() {
                               $("#r_" + airportsNotCYO[i].code).on("click", function(){
                                   currentAirportRequestPage = airportsNotCYO[i];
                                   airportName = airportsNotCYO[i].name;
-                                  alert(airportName);
+                                  // alert(airportName);
 
                                   $("#depAirportInput").val(airportsNotCYO[i].name);
                                   $(".dropdown").remove();
                                   $(".temp").remove();
 
                                   //remake flight list
-                                  make_flight_list(currentAirportRequestPage.id);
+                                  make_flightlist_send_page(currentAirportRequestPage.id);
                               });
                           } else {
                               $("#r_" + airportsNotCYO[i].code).remove();
@@ -181,7 +284,7 @@ $(document).ready(function() {
 
 
     let itemToSendInput = $('<input type="text" placeholder="What are you sending?"> </input>');
-    senddiv.append(itemToSendINput);
+    senddiv.append(itemToSendInput);
     let itemToSend = "";
     itemToSendInput.on("keyup", function() {
       itemToSend = $(this).val();
@@ -196,20 +299,58 @@ $(document).ready(function() {
     newLine(senddiv);
 
     //List of flights
-    senddiv.append('<ul id = "flightlist"></ul>');
+    senddiv.append('<div id = "flightlist"></div>');
     flightlist = $('#flightlist');
     make_flightlist_send_page(currentAirportRequestPage.id);
 
-    // click event for send button -- changes ticket to have User be the seller
-    senddiv.append('<input type="button" id=sendPUT" value="SEND ITEM"> </input>');
-    $('#sendPUT').on("click", function() {
-
-    });
-
     // click event for send button -- adds a flight instance to it if one is not already chosen
-    senddiv.append('<input type="button" id=sendSubmit" value="SEND"> </input>');
+    senddiv.append('<input type="button" id="sendSubmit" value="SEND"> </input>');
+
     $('#sendSubmit').on("click", function() {
 
+      // keep everything in here -- this fixed the glitch
+        let airport_id = currentAirportRequestPage.id;
+        let flight_id = $("input[name='flightS']:checked").val();
+
+        // keep this part
+        $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
+               {
+               type: 'GET',
+               dataType: 'json',
+               xhrFields: {withCredentials: true},
+               success: (response) => {
+                 // console.log(response);
+                 let instance = response[0]; //array should be exactly one instance
+                 let instance_id = instance.id;
+                 // console.log(gender);
+                 let data =  { "ticket" : {
+                                   "first_name": itemToSend,
+                                   "middle_name" : "",
+                                   "last_name": currentName,
+                                   "age" : 1,
+                                   "gender" : gender,
+                                   "is_purchased" : 0.0,
+                                   "price_paid" : askPrice,
+                                   "instance_id" : instance_id,
+                                   "seat_id" : 5520
+                                   }
+                               }
+                  if (itemToSend != "" && askPrice != "" && airport_id != "") {
+                    // POST new ticket with given info from user
+                    $.ajax(root_url + "/tickets?" , {
+                          type: 'POST',
+                          dataType: 'json',
+                          data: data,
+                          xhrFields: {withCredentials: true},
+                          success: (response) => {
+                            $('#sell').click();
+                          }
+                     });
+                 } else {
+                   alert("Please fill in all input boxes to make a request.");
+                 }
+               }
+        });
     });
 
   });
@@ -224,11 +365,9 @@ $(document).ready(function() {
 
     let recDiv = $('<div id="receive_div"> Pick Up </div> '); //main holder div for receive section
     main.append(recDiv);
+    recDiv.append('<input type="text" placeholder="Airports Near You ..."> </input>'); //will change to drop down of airports or autocomplete - arrival airport on ticket
 
-    recDiv.append('<input type="text" placeholder="Aiports Near You ..."> </input>'); //will change to drop down of airports or autocomplete - arrival airport on ticket
-
-    let submitr = $("<button id=submit_rec_arrival> SUBMIT </button>");
-
+    let submitr = $("<button id=submit_rec_arrival> Submit </button>");
     recDiv.append(submitr);
 
     recDiv.append('<h2> Avalible/Unpurchsed Items <h2>');
@@ -305,37 +444,12 @@ $(document).ready(function() {
     });
   });
 
-
-  // $('.rbutton').on('click', function() {
-  //   gender = $(this).val();
-  //   make_request_list(gender);
-  //   if (gender == "dark") {
-  //     document.body.style.backgroundColor = "#282828";
-  //     document.body.style.color = "white";
-  //     if(document.getElementById("req_flightlist")!=null) {
-  //       document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
-  //       if (document.getElementById("newFlightInput") != null) {
-  //         document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
-  //       }
-  //     }
-  //   } else {
-  //     document.body.style.backgroundColor = "white";
-  //     document.body.style.color = "black";
-  //     if(document.getElementById("req_flightlist")!=null) {
-  //       document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
-  //       if (document.getElementById("newFlightInput") != null) {
-  //         document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
-  //       }
-  //     }
-  //   }
-  // });
-
-
   // olivia
 	// request page
   $("#request").on("click", function(){
     main.empty();
-
+    newLine(main);
+    main.append('<div id="req_div"> Make a Request! </div> ');
 
     // select "gender", if dark, change background color
     $('#bright').prop("checked", true);
@@ -353,34 +467,21 @@ $(document).ready(function() {
       }
     });
 
-
-    main.append('<div id="req_div"> </div> ');
-
+    // Make text boxes with options for user to fill in
     reqdiv = $('#req_div');
     newLine(reqdiv);
-    reqdiv.append('<label class = "req_label"> MAKE A REQUEST!</label> ');
-    newLine(reqdiv);
 
-    //jess autocomplete
     let autoCompleteDiv = $('<div class="autocomplete"></div>'); //added jess
 
- 
-    // Make text boxes with options for user to fill in
-    reqdiv.append('<div id="req_div_textholder"> </div> ');
-    req_div_textholder = $('#req_div_textholder');
-
-    let airportInput = $('<input type="text" id="airportInput" class="req" placeholder="Arrival airport" searchBar2> </input>'); // user types in arrival airport
+    let airportInput = $('<input type="text" id="airportInput" class="req" placeholder="Arrival airport" searchBar2></input><br>'); // user types in arrival airport
     autoCompleteDiv.append(airportInput);  //new
 
-    req_div_textholder.append(autoCompleteDiv);
+    reqdiv.append(autoCompleteDiv);
 
     let airportName = "";
-    airportInput.on("keyup", function() {
-        airportName = $(this).val();
-    });
 
     //jess helper code
-
+    console.log(airports.length);
     let airportNames = new Array(airports.length -1);
     let airportsNotCYO = new Array(airports.length -1);
 
@@ -396,7 +497,6 @@ $(document).ready(function() {
         }
 
     }
-
 
   let currentAirportRequestPage = airportsNotCYO[0];
 
@@ -438,40 +538,31 @@ $(document).ready(function() {
             }
     }); //end of autocomplete #2
 
-  
-
-    // newLine(reqdiv);
-    let itemReqNameInput = $('<input type="text" id="itemRequestName" class="req" placeholder="Input item"> </input>');
-    req_div_textholder.append(itemReqNameInput);
-
+    newLine(reqdiv);
+    let itemReqNameInput = $('<input type="text" id="itemRequestName" class="req" placeholder="What item are you requesting?"> </input>');
+    reqdiv.append(itemReqNameInput);
     let itemName = "";
     itemReqNameInput.on("keyup", function() {
       itemName = $(this).val();
     });
 
-
-    // newLine(reqdiv);
-    let priceReqInput = $('<input type="text" id="reqPriceWilling" class="req" placeholder="Price bid"> </input>');
-    req_div_textholder.append(priceReqInput);
-
+    newLine(reqdiv);
+    let priceReqInput = $('<input type="text" id="reqPriceWilling" class="req" placeholder="How much are you willing to pay?"> </input>');
+    reqdiv.append(priceReqInput);
     let priceWillReq = "";
     priceReqInput.on("keyup", function() {
       priceWillReq = $(this).val();
     });
 
-
     newLine(reqdiv);
-
     //List of flights going to that airport
     reqdiv.append('<div id = "req_flightlist"></div>');
     reqFlightList = $('#req_flightlist');
 
-
     let airport_id = currentAirportRequestPage.id;
-    //if problem, check here
 
       // give user the option to add a new flight if their preference is not there
-      let makeFlight = $('<input class="reqbutton" type="radio" name="flight" id="newFlight"> Add New Flight <br>');
+      let makeFlight = $('<input class="reqbutton" type="radio" name="flightNew" id="newFlight"> Add New Flight <br>');
       reqdiv.append(makeFlight);
       let inputDiv = $('<div id="newFlightInput"></div>');
       $('#newFlight').on("click", function(){
@@ -479,17 +570,13 @@ $(document).ready(function() {
 
         // option for flight arrival time
         reqdiv.append(inputDiv);
-
-        addDateDropdown();
-        inputDiv.append('<br>');
-
         addTimeDropdown();
-        let submitButton = $('<input type="button" value="SUBMIT" id="submitFlight"> </input>');
+        addDateDropdown();
+        let submitButton = $('<input type="button" value="Submit" id="submitFlight"> </input>');
         inputDiv.append(submitButton);
         newLine(inputDiv);
         newLine(inputDiv);
         let arrTime;
-
         let depTime;
 
         // let the user submit their own arrival time, making a new flight
@@ -501,7 +588,7 @@ $(document).ready(function() {
           let minSel = document.getElementById("minSel").selectedIndex;
           let min = document.getElementsByTagName("option")[minSel].value;
           arrTime = hour + ":" + min;
-          console.log(arrTime);
+          // console.log(arrTime);
           let dHour, depTime, depDay, depYear, depMonth, depDate;
 
           let yearSel = document.getElementById("yearSel").selectedIndex;
@@ -514,7 +601,7 @@ $(document).ready(function() {
             day = "0" + day.toString();
           }
           let date = year + "-" + month + "-" + day;
-          console.log(date);
+          // console.log(date);
 
           depYear = year;
           // make dep time 3 hours less than arrival
@@ -557,7 +644,6 @@ $(document).ready(function() {
           }
           depDate = depYear + "-" + depMonth + "-" + depDay;
 
-
           // don't allow user to select past days or days that don't exist
           if ((parseInt(year) == 2018 && parseInt(month) < 12) ||  (parseInt(month) == 12 && parseInt(day) < 10)) {
             alert("You cannot choose a date that has already passed.");
@@ -583,9 +669,7 @@ $(document).ready(function() {
                data: flightData,
                xhrFields: {withCredentials: true},
                success: (response) => {
-
                  make_flight_list(currentAirportRequestPage.id);
-
                  // make new instance of the flight
                  let instanceData = {
                    "instance" : {
@@ -605,16 +689,15 @@ $(document).ready(function() {
                }
             }); // end of ajax call for flights
           }
-
+          // make_flight_list(currentAirportRequestPage.id);
         });
 
       });
 
     $('.reqbutton').on('click', function() {
-       console.log("here");
+       // console.log("here");
        chosenFlightValue = $(this).val();
-       console.log(chosenFlightValue);
-
+       // console.log(chosenFlightValue);
     });
 
     // final request button
@@ -624,16 +707,9 @@ $(document).ready(function() {
 
     // click event for request button -- POST new ticket
     $('#requestDone').on("click", function(){
-
-      // let chosenFlight = matchArray[$(".reqbutton").val()]; // FIX HERE
-      let chosenFlight = $(".reqbutton").val();
-      // console.log(matchArray[$(".reqbutton").val()]);
-      console.log(chosenFlight);
-      console.log($(".reqbutton").val());
-
-
-      let airport_id = chosenFlight.arrival_id;
-      let flight_id = chosenFlight.id;
+      // keep everything in here -- this fixed the glitch
+      let airport_id = currentAirportRequestPage.id;
+      let flight_id = $("input[name='flightR']:checked").val();
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
              {
              type: 'GET',
@@ -642,10 +718,11 @@ $(document).ready(function() {
              success: (response) => {
                  let instance = response[0]; //array should be exactly one instance
                  let instance_id = instance.id;
-                 console.log(gender);
+                 // console.log("instance_id:");
+                 // console.log(instance_id);
                  let data =  { "ticket" : {
                                    "first_name": itemName,
-                                   "middle_name" : "User",
+                                   "middle_name" : currentName,
                                    "last_name": "Request",
                                    "age" : 1,
                                    "gender" : gender,
@@ -654,7 +731,6 @@ $(document).ready(function() {
                                    "instance_id" : instance_id,
                                    "seat_id" : 5520
                                    }
-
                                }
                   if (itemName != "" && priceWillReq != "" && airport_id != "") {
                     // POST new ticket with given info from user
@@ -664,115 +740,127 @@ $(document).ready(function() {
                           data: data,
                           xhrFields: {withCredentials: true},
                           success: (response) => {
+                            $('#request').click();
                           }
                      });
                  } else {
                    alert("Please fill in all input boxes to make a request.");
                  }
-
              }
         });
     });
 
+
   });
 
   // function to load request list
-  function make_request_list(gender) {
-    $('#requestlist').empty();
-    let matchArray = [];
+    function make_request_list(gender) {
+      $('#requestlist').empty();
+      currentRequestRadioVal = 0;
+      let matchArray = [];
+      let instanceID, currentID;
 
-    $.ajax(root_url + "tickets", {
-       type: 'GET',
-       dataType: 'json',
-       xhrFields: {withCredentials: true},
-       success: (response) => {
-         let array = response;
-         //find all requests where middle/last name is not the User and gender is correct
-         for (let i = 0; i < array.length; i++ ) {
-           if (array[i].gender == gender && !array[i].last_name.includes("User") && array[i].is_purchased == true) {
-            if (array[i].middle_name.includes("User")){
-              //nothing
-            } else {
-              matchArray.push(array[i]);
-            }
+      $.ajax(root_url + "tickets", {
+         type: 'GET',
+         dataType: 'json',
+         xhrFields: {withCredentials: true},
+         success: (response) => {
+           let array = response;
+           //find all requests where middle/last name is not the User and gender is correct
+           for (let i = 0; i < array.length; i++ ) {
+             if (array[i].gender == gender && array[i].is_purchased == true) {
+              if (array[i].middle_name.includes("User")){
+                //nothing
+              } else {
+                if (array[i].last_name.includes("User")){
+                  //nothing
+                } else {
+                  matchArray.push(array[i]);
+                }
+              }
 
+             }
            }
-         }
-      // create text nodes of flight info, radio button to choose one, and append to list div for flights
-      for (let j = 0; j < matchArray.length; j++) {
-          let reqListDiv = $('<div id="indivRequest"></div>');
-          let firstName = matchArray[j].first_name;
-          let pricePay = matchArray[j].price_paid;
-          $.ajax(root_url + "instances?filter[id]=" + matchArray[j].instance_id,
-                 {
-                 type: 'GET',
-                 dataType: 'json',
-                 xhrFields: {withCredentials: true},
-                 success: (response) => {
-                   let instarray = response;
-                   let flight_id, dep_date;
-                   // match the ticket with its instance object
-                   for (let p = 0; p < instarray.length; p++) {
-                     if (instarray[p].id == matchArray[j].instance_id) {
-                       flight_id = instarray[p].flight_id;
-                       dep_date = instarray[p].date;
-                     }
-                   }
-                       // GET flight
-                       $.ajax(root_url + "flights?filter[id]=" + flight_id, {
-                              type: 'GET',
-                              dataType: 'json',
-                              xhrFields: {withCredentials: true},
-                              success: (response) => {
-                                let flightarray = response;
-                                let dep_time, dep_id;
-                                // match the ticket with its flight object
-                                for (let m = 0; m < flightarray.length; m++) {
-                                  if (instarray[m].id == matchArray[j].instance_id) {
-                                    dep_time = flightarray[m].departs_at;
-                                    dep_id = flightarray[m].departure_id;
-                                  }
+        // create text nodes of flight info, radio button to choose one, and append to list div for flights
+        for (let j = 0; j < matchArray.length; j++) {
+            let reqListDiv = $('<div id="indivRequest"></div>');
+            instanceID = matchArray[j].instance_id;
+            currentID = matchArray[j].id;
+            let firstName = matchArray[j].first_name;
+            let pricePay = matchArray[j].price_paid;
+            $.ajax(root_url + "instances?filter[id]=" + matchArray[j].instance_id,
+                   {
+                   type: 'GET',
+                   dataType: 'json',
+                   xhrFields: {withCredentials: true},
+                   success: (response) => {
+                     let instarray = response;
+                     let flight_id, dep_date;
+                     // match the ticket with its instance object
+                     for (let p = 0; p < instarray.length; p++) {
+                         if (instarray[p].id == matchArray[j].instance_id) {
+                           flight_id = instarray[p].flight_id;
+                           dep_date = instarray[p].date;
+                         }
+                    }
+                         // GET flight
+                         $.ajax(root_url + "flights?filter[id]=" + flight_id, {
+                                type: 'GET',
+                                dataType: 'json',
+                                xhrFields: {withCredentials: true},
+                                success: (response) => {
+                                  let flightarray = response;
+                                  let dep_time, dep_id;
+                                  // match the ticket with its flight object
+                                  for (let m = 0; m < flightarray.length; m++) {
+                                    if (flightarray[m].id == flight_id) {
+                                      // console.log("flight_id: ");
+                                      // console.log(flightarray[m].id);
+                                      dep_time = flightarray[m].departs_at;
+                                      dep_id = flightarray[m].departure_id;
+                                    }
                                 }
-                       //            // GET airport
-                                  $.ajax(root_url + "airports?", {
-                                         type: 'GET',
-                                         dataType: 'json',
-                                         xhrFields: {withCredentials: true},
-                                         success: (response) => {
-                                            for (let k = 0; k < response.length; k++) {
-                                              let airport = response[k];
-                                              if (airport.id == dep_id) {
-                                                let indivTick = $('<div id="indivTicket"></div>');
-                                                let requestButton = $('<input class="requestButton" type="radio" name="request" value="' + j + '"> Fulfill this Request: <br>');
-                                                let item = $('<div id="itemName">' + "Item Requested: " + firstName + '</div>');
-                                                let compPrice = $('<div id="compPrice">' + "Compensation Price: $" + pricePay + '</div>');
-                                                let depDate = $('<div id="depDate">' + "Departure Date: " + dep_date + '</div>');
-                                                let depTime = $('<div id="depTime">' + "Departure Time: " + dep_time.slice(11, 16) + '</div>');
-                                                let depAir = $('<div id="depAir">' + "Departure Airport: " + airport.name + " (" + airport.code + ")" + '</div>');
-                                                indivTick.append(requestButton);
-                                                indivTick.append(item);
-                                                indivTick.append(compPrice);
-                                                indivTick.append(depDate);
-                                                indivTick.append(depTime);
-                                                indivTick.append(depAir);
-                                                newLine(indivTick);
-                                                $('#requestlist').append(indivTick);
+
+                                     // GET airport
+                                    $.ajax(root_url + "airports?", {
+                                           type: 'GET',
+                                           dataType: 'json',
+                                           xhrFields: {withCredentials: true},
+                                           success: (response) => {
+                                              for (let k = 0; k < response.length; k++) {
+                                                let airport = response[k];
+                                                if (airport.id == dep_id) {
+                                                  let indivTick = $('<div id="indivTicket_' + currentID + '"></div>');
+                                                  let requestButton = $('<input class="requestButton" type="radio" name="request" value="' + currentID + '"> Fulfill this Request: <br>');
+                                                  let item = $('<div id="itemName">' + "Item Requested: " + firstName + '</div>');
+                                                  let compPrice = $('<div id="compPrice">' + "Compensation Price: $" + pricePay + '</div>');
+                                                  let depDate = $('<div id="depDate">' + "Departure Date: " + dep_date + '</div>');
+                                                  let depTime = $('<div id="depTime">' + "Departure Time: " + dep_time.slice(11, 16) + '</div>');
+                                                  let depAir = $('<div id="depAir">' + "Departure Airport: " + airport.name + " (" + airport.code + ")" + '</div>');
+                                                  indivTick.append(requestButton);
+                                                  indivTick.append(item);
+                                                  indivTick.append(compPrice);
+                                                  indivTick.append(depDate);
+                                                  indivTick.append(depTime);
+                                                  indivTick.append(depAir);
+                                                  newLine(indivTick);
+                                                  $('#requestlist').append(indivTick);
+                                                }
                                               }
-                                            }
-                                        }
-                               });
-                             // }
-                           }
-                      });
-                    // }
-                 }  // instance end
-          });
-      }  // end of for loop for matcharray
-     }
-   });
-  }
+                                          }
+                                 });
+                               // } // for loop flight
+                             } // flight success
+                        });
+                      // } // instance for loop
+                   }  // instance end
+            }); // instance ajax call
+        }  // end of for loop for matcharray
+       }
+     });
+  } // end of make_request_list
     
-  // function: repopulate receive list - new WORKING ON THIS
+  // function: repopulate receive list - new
   function make_receive_list(currentAirportReceivePage) {
     listDiv.empty(); //to prevent duplicates on multiple button click
 
@@ -883,20 +971,21 @@ $(document).ready(function() {
       
   };
 
+
   // function to update flight list when new one is added
   function make_flight_list(airportid) {
     $('#req_flightlist').empty();
+    radioButtonRequest = [];
     let airport_id = airportid;
+    let flight, currentflightId;
+    let matchArray = [];
 
-    let flight;
-
-     let matchArray = [];
     $.ajax(root_url + "flights", {
        type: 'GET',
        dataType: 'json',
        xhrFields: {withCredentials: true},
        success: (response) => {
-         console.log(response);
+         // console.log(response);
          let array = response;
 
          //find correct arrival ids
@@ -904,14 +993,13 @@ $(document).ready(function() {
               if(array[i].arrival_id == airport_id){
                   //get instance of that flight
                   matchArray.push(array[i]);
-
                 }
         }
 
       // create text nodes of flight info, radio button to choose one, and append to list div for flights
       for (let j = 0; j < matchArray.length; j++) {
           let flightDiv =  $('<div id="indivFlight"></div>');
-
+          currentFlightId = matchArray[j].id;
           let arrivalid = airport_id;
           let arrivesat = matchArray[j].arrives_at;
           let instanceDate;
@@ -923,38 +1011,40 @@ $(document).ready(function() {
              dataType: 'json',
              xhrFields: {withCredentials: true},
              success: (response) => {
-               instanceDate = response[0].date;
-               flight = $('<input class="reqbutton" type="radio" name="flight" id="chooseFlight" value="' +
-               j + '"> <label class="bold">Choose this Flight:</label> <br>');
-               let arrtime = document.createTextNode("Arrival Time: " + arrivesat.slice(11, 16));
-               let arrdate = document.createTextNode("Arrival Date: " + instanceDate.toString());
+               // keep everything in here -- this fixed the glitch
+               let inst = response[0];
+               radioButtonRequest.push(inst);
+               currentFlightId = inst.flight_id;
+               instanceDate = inst.date;
+               console.log(currentFlightId);
+               flight = $('<input class="flightButtonReq" type="radio" name="flightR" id="'+ inst.flight_id + '" value="' +
+               currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
+               let arrtime = $('<div id="arrTime">' + "Arrival Time: " + arrivesat.slice(11, 16) + '</div>');
+               let arrdate = $('<div id="arrDate">' + "Arrival Date: " + instanceDate.toString() + '</div>');
                flightDiv.append(flight);
                flightDiv.append(arrdate);
-               newLine(flightDiv);
                flightDiv.append(arrtime);
                newLine(flightDiv);
-               reqFlightList.append(flightDiv);
+               $('#req_flightlist').append(flightDiv);
              }
           });
-
       }
      }
    });
   }
 
-
   function make_flightlist_send_page(airportid) {
     $('#flightlist').empty();
     let airport_id = airportid;
-    let flight;
+    let flight, currentFlightId;
 
-     let matchArray = [];
+    let matchArray = [];
     $.ajax(root_url + "flights", {
        type: 'GET',
        dataType: 'json',
        xhrFields: {withCredentials: true},
        success: (response) => {
-         console.log(response);
+         // console.log(response);
          let array = response;
 
          //find correct arrival ids
@@ -963,13 +1053,14 @@ $(document).ready(function() {
                   //get instance of that flight
                   matchArray.push(array[i]);
                 }
-        }
+         }
 
         // create text nodes of flight info, radio button to choose one, and append to list div for flights
         for (let j = 0; j < matchArray.length; j++) {
             let flightDiv =  $('<div id="indivFlight"></div>');
+            currentFlightId = matchArray[j].id;
             let departureid = airport_id;
-            let departsat = matchArray[j].arrives_at;
+            let departsat = matchArray[j].departs_at;
             let instanceDate;
 
             // get date
@@ -979,17 +1070,18 @@ $(document).ready(function() {
                dataType: 'json',
                xhrFields: {withCredentials: true},
                success: (response) => {
+                 // keep everything in here -- this fixed the glitch
+                 currentFlightId = response[0].flight_id;
                  instanceDate = response[0].date;
-                 flight = $('<input class="reqbutton" type="radio" name="flight" id="chooseFlight" value="' +
-                 j + '"> <label class="bold">Choose this Flight:</label> <br>');
-                 let deptime = document.createTextNode("Departure Time: " + departsat.slice(11, 16));
-                 let depdate = document.createTextNode("Departure Date: " + instanceDate.toString());
+                 flight = $('<input class="flightButtonSend" type="radio" name="flightS" id="'+ response[0].flight_id +'" value="' +
+                 currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
+                 let deptime = $('<div id="depTime">' + "Departure Time: " + departsat.slice(11, 16) + '</div>');
+                 let depdate = $('<div id="depDate">' + "Departure Date: " + instanceDate.toString() + '</div>');
                  flightDiv.append(flight);
                  flightDiv.append(depdate);
-                 newLine(flightDiv);
                  flightDiv.append(deptime);
                  newLine(flightDiv);
-                 flightlist.append(flightDiv);
+                 $('#flightlist').append(flightDiv);
                }
             });
         }
@@ -997,22 +1089,17 @@ $(document).ready(function() {
    });
   }
 
-
   function addTimeDropdown() {
     let td = $('<td class="record-value"></td>');
     $('#newFlightInput').append(td);
 
-
-    td.append('<label class = "timelabel bold"> ARRIVAL TIME: </label> ');
-
+    td.append("Arrival Time: ");
     // add hour dropdown
     let div = $('<div id="hourDiv" class="form-inline time-view"></div>');
     let selectTime = $('<select tabindex="0" id="hourSel" class="form-control x-select time-view">');
     td.append(div);
     div.append("Hour: ");
-
     div.append(selectTime);
-
     for (let i = 0; i < 24; i++) {
       if (i < 10) {
         let timeOpt = $('<option value="0' + i + '" id="hour0' + i + '" class="x-option time-view"></option>');
@@ -1049,12 +1136,10 @@ $(document).ready(function() {
   }
 
   function addDateDropdown() {
-
     let td = $('<td class="record-value"></td>');
     $('#newFlightInput').append(td);
 
-   td.append('<label class = "datelabel bold"> ARRIVAL DATE: </label> ');
-    
+    td.append("Arrival Date: ");
     // add year dropdown
     let yearDiv = $('<div id="yearDiv" class="form-inline year-view"></div>');
     let selectYear = $('<select tabindex="0" id="yearSel" class="form-control x-select year-view">');
@@ -1068,7 +1153,7 @@ $(document).ready(function() {
         let text = document.createTextNode(p);
         timeOpt.append(text);
     }
-    
+
     // add month dropdown
     let monthDiv = $('<div id="monthDiv" class="form-inline month-view"></div>');
     let selectMonth = $('<select tabindex="0" id="monthSel" class="form-control x-select month-view">');
@@ -1110,7 +1195,7 @@ $(document).ready(function() {
     }
   }
 
- 
+
   //jess - receive page
  $("#receive").on("click", function(){
    main.empty();
@@ -1147,10 +1232,10 @@ $(document).ready(function() {
 
    }
 
+
    currentAirportReceivePage = airportsNotCYO[0];
    
-   
-
+  
        //autocomplete
      $('[searchBar]').on("keyup", function() {
  
@@ -1177,83 +1262,293 @@ $(document).ready(function() {
                                  
                              });
 
-                         } else {
-                             $("#" + airportsNotCYO[i].code).remove();
-                             $("#temp_" + airportsNotCYO[i].code).remove();
 
-                         }
-                     }
+                       } else {
+                           $("#" + airportsNotCYO[i].code).remove();
+                           $("#temp_" + airportsNotCYO[i].code).remove();
 
-             } else {
-                 $(".dropdown").remove();
-                 $(".temp").remove();
-             }
-     });
+                       }
+                   }
+
+           } else {
+               $(".dropdown").remove();
+               $(".temp").remove();
+           }
    });
+ });
 
+ // populate the up for sale items on my things page
+ function make_upForSale_list(gender) {
+   $('#upForSale').empty();
 
+   $.ajax(root_url + "tickets?filter[is_purchased]=0.0", //filtering ajax request on tickets
+      {
+          type: 'GET',
+          dataType: 'json',
+          xhrFields: {withCredentials: true},
+          success: (response) => {
+            let ticketArray = response;
+            for (let i = 0; i < ticketArray.length; i++) {
+              if (ticketArray[i].last_name.includes("User") && ticketArray[i].gender == gender) {
+                $.ajax(root_url + "instances?filter[id]=" + ticketArray[i].instance_id, //filtering ajax request on tickets
+                   {
+                       type: 'GET',
+                       dataType: 'json',
+                       xhrFields: {withCredentials: true},
+                       success: (response) => {
+                          let instanceRay = response;
+                          for (let j = 0; j < instanceRay.length; j++) {
+                            if (instanceRay[j].id == ticketArray[i].instance_id) {
+                              let date = instanceRay[j].date;
+                              $.ajax(root_url + "flights?filter[id]=" + instanceRay[j].id, //filtering ajax request on tickets
+                                 {
+                                     type: 'GET',
+                                     dataType: 'json',
+                                     xhrFields: {withCredentials: true},
+                                     success: (response) => {
+                                       let flightRay = response;
+                                       for (let p = 0; p < flightRay.length; p++) {
+                                         if (flightRay[p].id == instanceRay[j].flight_id) {
+                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].departure_id, //filtering ajax request on tickets
+                                              {
+                                                  type: 'GET',
+                                                  dataType: 'json',
+                                                  xhrFields: {withCredentials: true},
+                                                  success: (response) => {
+                                                    let airRay = response;
+                                                    for (let m = 0; m < airRay.length; m++) {
+                                                      if (airRay[m].id == flightRay[p].departure_id) {
+                                                        let indTick = $('<div id="indTick"></div>');
+                                                        indTick.append(ticketArray[i]);
+                                                        indTick.append('<div id="itemNameSale"> Item: ' + ticketArray[i].first_name + '</div>');
+                                                        indTick.append('<div id="askingPriceSale"> Asking Price: ' + ticketArray[i].price_paid + '</div>');
+                                                        indTick.append('<div id="depDateSale"> Depature Date: ' + date + '</div>');
+                                                        indTick.append('<div id="depTimeSale"> Departure Time: ' + flightRay[p].departs_at.slice(11, 16) + '</div>');
+                                                        indTick.append('<div id="depAirSale"> Departure Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
+                                                        newLine(indTick);
+                                                        $('#upForSale').append(indTick);
+                                                    }
+                                                 }
+                                               }
+                                            });
+                                        }
+                                   }
+                               }
+                            });
+                           }
+                        }
+                     }
+                 });
+              }
+            }
+          }
+     });
+ }
 
-//third party api
-    $("#pokemonButton").on("click", function(){
-                
-        if (currentGenderVal == "dark"){
-            $.ajax("https://pokeapi.co/api/v2/type/17/", //dark type
-            {
-                type: 'GET',
-                dataType: 'json',
-                
-                success: (response) => {
-                    let pokemon = response.pokemon;
-                    let numPokemon = pokemon.length;
-                    let rand = Math.floor(Math.random() * numPokemon);
-                    
-                    let pickedPokemon = pokemon[rand].pokemon.name;
-                    
-                    if (pickedPokemon.includes("-")){
-                        let splitArray = pickedPokemon.split("-");
-                        pickedPokemon = splitArray[0];
-                    }
-                    
-                    currentName = pickedPokemon;
-                    $("#currentPseudonym").text("Current Pseudonym: " + pickedPokemon);
-                    
-                }
-            });
-        } else {
-            $.ajax("https://pokeapi.co/api/v2/type/3/", //flying type
-            {
-                type: 'GET',
-                dataType: 'json',
-                
-                success: (response) => {
-                    let pokemon = response.pokemon;
-                    let numPokemon = pokemon.length;
-                    let rand = Math.floor(Math.random() * numPokemon);
-                    
-                    let pickedPokemon = pokemon[rand].pokemon.name;
-                    
-                    if (pickedPokemon.includes("-")){
-                        let splitArray = pickedPokemon.split("-");
-                        pickedPokemon = splitArray[0];
-                    }
-                    
-                    currentName = "User: " + pickedPokemon;
-                    $("#currentPseudonym").text("Current Pseudonym: " + pickedPokemon);
-                    
-                }
-            });
-        }
+ // populate the fulfilled items on my things page
+ function make_fulfilled_list(gender) {
+   $('#fulfilledReq').empty();
 
+   $.ajax(root_url + "tickets?filter[is_purchased]=1.0", //filtering ajax request on tickets
+      {
+          type: 'GET',
+          dataType: 'json',
+          xhrFields: {withCredentials: true},
+          success: (response) => {
+            let ticketArray = response;
+            for (let i = 0; i < ticketArray.length; i++) {
+              if (ticketArray[i].last_name.includes("User") && ticketArray[i].gender == gender) {
+                $.ajax(root_url + "instances?filter[id]=" + ticketArray[i].instance_id, //filtering ajax request on tickets
+                   {
+                       type: 'GET',
+                       dataType: 'json',
+                       xhrFields: {withCredentials: true},
+                       success: (response) => {
+                          let instanceRay = response;
+                          for (let j = 0; j < instanceRay.length; j++) {
+                            if (instanceRay[j].id == ticketArray[i].instance_id) {
+                              let date = instanceRay[j].date;
+                              $.ajax(root_url + "flights?filter[id]=" + instanceRay[j].id, //filtering ajax request on tickets
+                                 {
+                                     type: 'GET',
+                                     dataType: 'json',
+                                     xhrFields: {withCredentials: true},
+                                     success: (response) => {
+                                       let flightRay = response;
+                                       for (let p = 0; p < flightRay.length; p++) {
+                                         if (flightRay[p].id == instanceRay[j].flight_id) {
+                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].departure_id, //filtering ajax request on tickets
+                                              {
+                                                  type: 'GET',
+                                                  dataType: 'json',
+                                                  xhrFields: {withCredentials: true},
+                                                  success: (response) => {
+                                                    let airRay = response;
+                                                    for (let m = 0; m < airRay.length; m++) {
+                                                      if (airRay[m].id == flightRay[p].departure_id) {
+                                                        let indFluff = $('<div id="indFluff"></div>');
+                                                        indFluff.append(ticketArray[i]);
+                                                        indFluff.append('<div id="itemNameFulfill"> Item: ' + ticketArray[i].first_name + '</div>');
+                                                        indFluff.append('<div id="compFulfill"> Compensation: ' + ticketArray[i].price_paid + '</div>');
+                                                        indFluff.append('<div id="depDateFulfill"> Depature Date: ' + date + '</div>');
+                                                        indFluff.append('<div id="depTimeFulfill"> Departure Time: ' + flightRay[p].departs_at.slice(11, 16) + '</div>');
+                                                        indFluff.append('<div id="depAirFulfill"> Departure Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
+                                                        newLine(indFluff);
+                                                        $('#fulfilledReq').append(indFluff);
+                                                    }
+                                                 }
+                                               }
+                                            });
+                                        }
+                                   }
+                               }
+                            });
+                           }
+                        }
+                     }
+                 });
+              }
+            }
+          }
+     });
+ }
 
+ // populate the ordered items on my things page
+ function make_order_list(gender) {
+   $('#order').empty();
 
-    });
+   $.ajax(root_url + "tickets?filter[is_purchased]=1.0", //filtering ajax request on tickets
+      {
+          type: 'GET',
+          dataType: 'json',
+          xhrFields: {withCredentials: true},
+          success: (response) => {
+            let ticketArray = response;
+            for (let i = 0; i < ticketArray.length; i++) {
+              if (ticketArray[i].middle_name.includes("User") && ticketArray[i].last_name != "Request" && ticketArray[i].last_name != "" && ticketArray[i].gender == gender) {
+                $.ajax(root_url + "instances?filter[id]=" + ticketArray[i].instance_id, //filtering ajax request on tickets
+                   {
+                       type: 'GET',
+                       dataType: 'json',
+                       xhrFields: {withCredentials: true},
+                       success: (response) => {
+                          let instanceRay = response;
+                          for (let j = 0; j < instanceRay.length; j++) {
+                            if (instanceRay[j].id == ticketArray[i].instance_id) {
+                              let date = instanceRay[j].date;
+                              $.ajax(root_url + "flights?filter[id]=" + instanceRay[j].id, //filtering ajax request on tickets
+                                 {
+                                     type: 'GET',
+                                     dataType: 'json',
+                                     xhrFields: {withCredentials: true},
+                                     success: (response) => {
+                                       let flightRay = response;
+                                       for (let p = 0; p < flightRay.length; p++) {
+                                         if (flightRay[p].id == instanceRay[j].flight_id) {
+                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].arrival_id, //filtering ajax request on tickets
+                                              {
+                                                  type: 'GET',
+                                                  dataType: 'json',
+                                                  xhrFields: {withCredentials: true},
+                                                  success: (response) => {
+                                                    let airRay = response;
+                                                    for (let m = 0; m < airRay.length; m++) {
+                                                      if (airRay[m].id == flightRay[p].arrival_id) {
+                                                        let indFluff = $('<div id="indFluff"></div>');
+                                                        indFluff.append(ticketArray[i]);
+                                                        indFluff.append('<div id="itemNameOrder"> Item: ' + ticketArray[i].first_name + '</div>');
+                                                        indFluff.append('<div id="priceOrder"> Price: ' + ticketArray[i].price_paid + '</div>');
+                                                        indFluff.append('<div id="arrDateOrder"> Arrival Date: ' + date + '</div>');
+                                                        indFluff.append('<div id="arrTimeOrder"> Arrival Time: ' + flightRay[p].arrives_at.slice(11, 16) + '</div>');
+                                                        indFluff.append('<div id="arrAirOrder"> Arrival Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
+                                                        newLine(indFluff);
+                                                        $('#order').append(indFluff);
+                                                    }
+                                                 }
+                                               }
+                                            });
+                                        }
+                                   }
+                               }
+                            });
+                           }
+                        }
+                     }
+                 });
+              }
+            }
+          }
+     });
+ }
 
+ // populate the requests made for items on my things page
+ function make_requestMade_list(gender) {
+   $('#requestsMade').empty();
 
-
-
-
-
+   $.ajax(root_url + "tickets?filter[is_purchased]=1.0", //filtering ajax request on tickets
+      {
+          type: 'GET',
+          dataType: 'json',
+          xhrFields: {withCredentials: true},
+          success: (response) => {
+            let ticketArray = response;
+            for (let i = 0; i < ticketArray.length; i++) {
+              if (ticketArray[i].last_name.includes("Request") && ticketArray[i].middle_name.includes("User") && ticketArray[i].gender == gender) {
+                $.ajax(root_url + "instances?filter[id]=" + ticketArray[i].instance_id, //filtering ajax request on tickets
+                   {
+                       type: 'GET',
+                       dataType: 'json',
+                       xhrFields: {withCredentials: true},
+                       success: (response) => {
+                          let instanceRay = response;
+                          for (let j = 0; j < instanceRay.length; j++) {
+                            if (instanceRay[j].id == ticketArray[i].instance_id) {
+                              let date = instanceRay[j].date;
+                              $.ajax(root_url + "flights?filter[id]=" + instanceRay[j].id, //filtering ajax request on tickets
+                                 {
+                                     type: 'GET',
+                                     dataType: 'json',
+                                     xhrFields: {withCredentials: true},
+                                     success: (response) => {
+                                       let flightRay = response;
+                                       for (let p = 0; p < flightRay.length; p++) {
+                                         if (flightRay[p].id == instanceRay[j].flight_id) {
+                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].departure_id, //filtering ajax request on tickets
+                                              {
+                                                  type: 'GET',
+                                                  dataType: 'json',
+                                                  xhrFields: {withCredentials: true},
+                                                  success: (response) => {
+                                                    let airRay = response;
+                                                    for (let m = 0; m < airRay.length; m++) {
+                                                      if (airRay[m].id == flightRay[p].departure_id) {
+                                                        let indFluff = $('<div id="indFluff"></div>');
+                                                        indFluff.append(ticketArray[i]);
+                                                        indFluff.append('<div id="itemNameReqMade"> Item: ' + ticketArray[i].first_name + '</div>');
+                                                        indFluff.append('<div id="priceReqMade"> Price: ' + ticketArray[i].price_paid + '</div>');
+                                                        indFluff.append('<div id="arrDateReqMade"> Arrival Date: ' + date + '</div>');
+                                                        indFluff.append('<div id="arrTimeReqMade"> Arrival Time: ' + flightRay[p].departs_at.slice(11, 16) + '</div>');
+                                                        indFluff.append('<div id="arrAirReqMade"> Arrival Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
+                                                        newLine(indFluff);
+                                                        $('#requestsMade').append(indFluff);
+                                                    }
+                                                 }
+                                               }
+                                            });
+                                        }
+                                   }
+                               }
+                            });
+                           }
+                        }
+                     }
+                 });
+              }
+            }
+          }
+     });
+ }
 
 
 });
-
+ 
