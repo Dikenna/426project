@@ -22,6 +22,7 @@ $(document).ready(function() {
         });
 
         let airports = [];
+        let radioButtonRequest = [];
         let gender;
         let currentRequestRadioVal = 0;
         $.ajax(root_url + "airports", //unfiltered
@@ -300,9 +301,10 @@ $(document).ready(function() {
     senddiv.append('<input type="button" id="sendSubmit" value="SEND"> </input>');
 
     $('#sendSubmit').on("click", function() {
+
       // keep everything in here -- this fixed the glitch
         let airport_id = currentAirportRequestPage.id;
-        let flight_id = $('.flightButtonSend').val();
+        let flight_id = $("input[name='flightS']:checked").val();
 
         // keep this part
         $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
@@ -335,6 +337,7 @@ $(document).ready(function() {
                           data: data,
                           xhrFields: {withCredentials: true},
                           success: (response) => {
+                            $('#sell').click();
                           }
                      });
                  } else {
@@ -553,7 +556,7 @@ $(document).ready(function() {
     let airport_id = currentAirportRequestPage.id;
 
       // give user the option to add a new flight if their preference is not there
-      let makeFlight = $('<input class="reqbutton" type="radio" name="flight" id="newFlight"> Add New Flight <br>');
+      let makeFlight = $('<input class="reqbutton" type="radio" name="flightNew" id="newFlight"> Add New Flight <br>');
       reqdiv.append(makeFlight);
       let inputDiv = $('<div id="newFlightInput"></div>');
       $('#newFlight').on("click", function(){
@@ -700,10 +703,7 @@ $(document).ready(function() {
     $('#requestDone').on("click", function(){
       // keep everything in here -- this fixed the glitch
       let airport_id = currentAirportRequestPage.id;
-      let flight_id = $('.flightButtonReq').val();
-      // console.log(flight_id);
-
-      // keep this part though:
+      let flight_id = $("input[name='flightR']:checked").val();
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
              {
              type: 'GET',
@@ -716,7 +716,7 @@ $(document).ready(function() {
                  // console.log(instance_id);
                  let data =  { "ticket" : {
                                    "first_name": itemName,
-                                   "middle_name" : "User",
+                                   "middle_name" : currentName,
                                    "last_name": "Request",
                                    "age" : 1,
                                    "gender" : gender,
@@ -856,6 +856,7 @@ $(document).ready(function() {
   // function to update flight list when new one is added
   function make_flight_list(airportid) {
     $('#req_flightlist').empty();
+    radioButtonRequest = [];
     let airport_id = airportid;
     let flight, currentflightId;
     let matchArray = [];
@@ -892,10 +893,12 @@ $(document).ready(function() {
              xhrFields: {withCredentials: true},
              success: (response) => {
                // keep everything in here -- this fixed the glitch
-               // console.log(response[0]);
-               currentFlightId = response[0].flight_id;
-               instanceDate = response[0].date;
-               flight = $('<input class="flightButtonReq" type="radio" name="flight" id="'+ response[0].flight_id + '" value="' +
+               let inst = response[0];
+               radioButtonRequest.push(inst);
+               currentFlightId = inst.flight_id;
+               instanceDate = inst.date;
+               console.log(currentFlightId);
+               flight = $('<input class="flightButtonReq" type="radio" name="flightR" id="'+ inst.flight_id + '" value="' +
                currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
                let arrtime = $('<div id="arrTime">' + "Arrival Time: " + arrivesat.slice(11, 16) + '</div>');
                let arrdate = $('<div id="arrDate">' + "Arrival Date: " + instanceDate.toString() + '</div>');
@@ -951,7 +954,7 @@ $(document).ready(function() {
                  // keep everything in here -- this fixed the glitch
                  currentFlightId = response[0].flight_id;
                  instanceDate = response[0].date;
-                 flight = $('<input class="flightButtonSend" type="radio" name="flight" id="'+ response[0].flight_id +'" value="' +
+                 flight = $('<input class="flightButtonSend" type="radio" name="flightS" id="'+ response[0].flight_id +'" value="' +
                  currentFlightId + '"> <label class="bold">Choose this Flight:</label> <br>');
                  let deptime = $('<div id="depTime">' + "Departure Time: " + departsat.slice(11, 16) + '</div>');
                  let depdate = $('<div id="depDate">' + "Departure Date: " + instanceDate.toString() + '</div>');
