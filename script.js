@@ -1195,6 +1195,56 @@ $(document).ready(function() {
     }
   }
 
+$("#pokemonButton").on("click", function(){ //third party api
+                
+        if (currentGenderVal == "dark"){
+            $.ajax("https://pokeapi.co/api/v2/type/17/", //dark type
+            {
+                type: 'GET',
+                dataType: 'json',
+                
+                success: (response) => {
+                    let pokemon = response.pokemon;
+                    let numPokemon = pokemon.length;
+                    let rand = Math.floor(Math.random() * numPokemon);
+                    
+                    let pickedPokemon = pokemon[rand].pokemon.name;
+                    
+                    if (pickedPokemon.includes("-")){
+                        let splitArray = pickedPokemon.split("-");
+                        pickedPokemon = splitArray[0];
+                    }
+                    
+                    currentName = pickedPokemon;
+                    $("#currentPseudonym").text("Current Pseudonym: " + pickedPokemon);
+                    
+                }
+            });
+        } else {
+            $.ajax("https://pokeapi.co/api/v2/type/3/", //flying type
+            {
+                type: 'GET',
+                dataType: 'json',
+                
+                success: (response) => {
+                    let pokemon = response.pokemon;
+                    let numPokemon = pokemon.length;
+                    let rand = Math.floor(Math.random() * numPokemon);
+                    
+                    let pickedPokemon = pokemon[rand].pokemon.name;
+                    
+                    if (pickedPokemon.includes("-")){
+                        let splitArray = pickedPokemon.split("-");
+                        pickedPokemon = splitArray[0];
+                    }
+                    
+                    currentName = "User: " + pickedPokemon;
+                    $("#currentPseudonym").text("Current Pseudonym: " + pickedPokemon);
+                    
+                }
+            });
+        }
+    });
 
   //jess - receive page
  $("#receive").on("click", function(){
