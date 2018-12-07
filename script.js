@@ -544,6 +544,7 @@ $(document).ready(function() {
 
                                 //remake flight list
                                 make_flight_list(currentAirportRequestPage.id);
+                                
 
                             });
                         } else {
@@ -1320,6 +1321,11 @@ $("#pokemonButton").on("click", function(){ //third party api
                                  $(".ticketDiv").remove();
 
                                  currentAirportReceivePage = airportsNotCYO[i];
+                                 
+                                 //get rid of dropdown once clicked - added
+                                 $("#myInput").val(airportsNotCYO[i].name);
+                                 $(".dropdown").remove();
+                                 $(".temp").remove();
 
                                  //when airport is submitted, generate all unpurchased tickets for which that is the arrival airport
                                  
