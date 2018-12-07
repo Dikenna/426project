@@ -1354,7 +1354,7 @@ $("#pokemonButton").on("click", function(){ //third party api
                                        let flightRay = response;
                                        for (let p = 0; p < flightRay.length; p++) {
                                          if (flightRay[p].id == instanceRay[j].flight_id) {
-                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].departure_id, //filtering ajax request on tickets
+                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].arrival_id, //filtering ajax request on tickets
                                               {
                                                   type: 'GET',
                                                   dataType: 'json',
@@ -1362,13 +1362,13 @@ $("#pokemonButton").on("click", function(){ //third party api
                                                   success: (response) => {
                                                     let airRay = response;
                                                     for (let m = 0; m < airRay.length; m++) {
-                                                      if (airRay[m].id == flightRay[p].departure_id) {
+                                                      if (airRay[m].id == flightRay[p].arrival_id) {
                                                         let indTick = $('<div id="indTick"></div>');
                                                         indTick.append(ticketArray[i]);
                                                         indTick.append('<div id="itemNameSale"> Item: ' + ticketArray[i].first_name + '</div>');
                                                         indTick.append('<div id="askingPriceSale"> Asking Price: ' + ticketArray[i].price_paid + '</div>');
                                                         indTick.append('<div id="depDateSale"> Depature Date: ' + date + '</div>');
-                                                        indTick.append('<div id="depTimeSale"> Departure Time: ' + flightRay[p].departs_at.slice(11, 16) + '</div>');
+                                                        indTick.append('<div id="depTimeSale"> Departure Time: ' + flightRay[p].arrives_at.slice(11, 16) + '</div>');
                                                         indTick.append('<div id="depAirSale"> Departure Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
                                                         newLine(indTick);
                                                         $('#upForSale').append(indTick);
