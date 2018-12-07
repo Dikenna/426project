@@ -135,6 +135,8 @@ $(document).ready(function() {
     $('.client-items').append($('<h1 class = "requestsMade"> Requests Made </h1>'));
     $('.requestsMade').append($('<div id="requestsMade"></div>'));
     make_requestMade_list(gender, root_url);
+	  
+   darkBrightHandler(gender);
 
   });
 
@@ -193,6 +195,7 @@ $(document).ready(function() {
           }
         });
     });
+	darkBrightHandler(gender);
   });
 
   // up for sale page
@@ -371,7 +374,7 @@ $(document).ready(function() {
                }
         });
     });
-
+  darkBrightHandler(gender);
   });
 
   function newLine(x){
@@ -461,6 +464,7 @@ $(document).ready(function() {
 	       }
 	   });
     });
+	darkBrightHandler(gender);
   });
 
   // olivia
@@ -769,8 +773,7 @@ $(document).ready(function() {
              }
         });
     });
-
-
+darkBrightHandler(gender);
   });
 
   // function to load request list
@@ -1620,6 +1623,46 @@ $("#pokemonButton").on("click", function(){ //third party api
           }
      });
  }
+	
+	function darkBrightHandler(gender){
+   if (gender == "dark") {
+     document.body.style.backgroundColor = "#282828";
+     document.body.style.color = "white";
+     if(document.getElementById("req_flightlist")!=null)
+       document.getElementById("req_flightlist").style.backgroundColor = "rgba(0,0,0,0.5)";
+
+     if(document.getElementById("newFlightInput")!=null)
+       document.getElementById("newFlightInput").style.backgroundColor = "rgba(0,0,0,0.5)";
+
+     if(document.getElementById("airport_div")!=null)
+       document.getElementById("airport_div").style.backgroundColor = "rgba(0,0,0,0.5)";
+
+     if(document.getElementById("items_div")!=null)
+       document.getElementById("items_div").style.backgroundColor = "rgba(0,0,25,0.5)";
+
+       document.getElementById("navdiv").style.color = "white";
+
+
+   } else {
+     document.body.style.backgroundColor = "white";
+     document.body.style.color = "black";
+     if(document.getElementById("req_flightlist")!=null)
+       document.getElementById("req_flightlist").style.backgroundColor = "rgba(250,250,250,0.5)";
+
+     if(document.getElementById("newFlightInput")!=null)
+       document.getElementById("newFlightInput").style.backgroundColor = "rgba(250,250,250,0.5)";
+
+     if(document.getElementById("airport_div")!=null)
+       document.getElementById("airport_div").style.backgroundColor = "rgba(245, 245, 245, 0.5)";
+
+     if(document.getElementById("items_div")!=null)
+       document.getElementById("items_div").style.backgroundColor = "rgba(220, 220, 245, 0.5)";
+
+     document.getElementById("navdiv").style.color = "black";
+
+   }
+ }
+
 
 
 });
