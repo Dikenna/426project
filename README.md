@@ -1,4 +1,4 @@
 # 426project
 426 project
 
-12/4 - 9 pm: merged in my new js code (receive page, drop-down menus, bug fixes for olivia) + olivia's request page that I hand-copied (only the bottom part), added a little css, everything merged automatically, so i guess its fine - jess
+Everything should be working and up to date. If something somehow stops working, we can present on someone's laptop that is, OR just never show KMP hohAha
