@@ -71,7 +71,8 @@ $(document).ready(function() {
 
     $('#sendUpdate').on("click", function() {
       let data = { "ticket": {"last_name": currentName } }
-        $.ajax(root_url + "tickets/" + $('.requestButton').val(), {
+      
+        $.ajax(root_url + "tickets/" + $("input[name='fulfillButtony']:checked").val(), {
           type: 'PATCH',
           dataType: 'json',
           data: data,
@@ -675,13 +676,13 @@ $(document).ready(function() {
                                                 let airport = response[k];
                                                 if (airport.id == dep_id) {
                                                   let indivTick = $('<div class="indivTicket" id="indivTicket_' + currentID + '"></div>');
-                                                  let requestButton = $('<input class="requestButton" type="radio" name="request" value="' + currentID + '"> Fulfill this Request: </input> <br></br>');
+                                                  let fulfillButton = $('<input class="fulfillButton" type="radio" name="fulfillButtony" value="' + currentID + '"> Fulfill this Request: </input> <br></br>');
                                                   let item = $('<div id="itemName">' + "Item Requested: " + firstName + '</div>');
                                                   let compPrice = $('<div id="compPrice">' + "Compensation Price: $" + pricePay + '</div>');
                                                   let depDate = $('<div id="depDate">' + "Departure Date: " + dep_date + '</div>');
                                                   let depTime = $('<div id="depTime">' + "Departure Time: " + dep_time.slice(11, 16) + '</div>');
                                                   let depAir = $('<div id="depAir">' + "Departure Airport: " + airport.name + " (" + airport.code + ")" + '</div>');
-                                                  indivTick.append(requestButton);
+                                                  indivTick.append(fulfillButton);
                                                   indivTick.append(item);
                                                   indivTick.append(compPrice);
                                                   indivTick.append(depDate);
