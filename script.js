@@ -761,6 +761,9 @@ $(document).ready(function() {
 
                                      //for each unpurchased ticket make new listing
                                      for (let i=0; i<tickets.length; i++) {
+					if (tickets[i].middle_name.includes("User") || tickets[i].last_name.includes("User")) {
+                                         //nothing
+                                       } else {    
                                              let ticketDiv = $('<div class="ticketDiv" id="ticketDiv_' + tickets[i].id + '"></div> ');
                                              //div per ticket - id is "ticketDiv_<ticketID>"
                                              listDiv.append(ticketDiv);
@@ -799,6 +802,7 @@ $(document).ready(function() {
                                                       }
                                                     });
                                              });
+				       }
                                      }
                                  }
                                 }
