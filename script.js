@@ -1434,6 +1434,8 @@ $("#pokemonButton").on("click", function(){ //third party api
     main.empty();
     main.append('<div id="mythingsdiv"></div>');
     mythingsdiv = $('#mythingsdiv');
+	  
+    darkBrightHandler(gender);
 
     mythingsdiv.append($('<div class = "client-items"></div>'));
     $('.client-items').append($('<h1 class = "sell"> Up For Sale </h1>'));
