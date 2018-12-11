@@ -24,7 +24,6 @@ $(document).ready(function() {
         });
 
         let airports = [];
-        let gender = "bright";
         $.ajax(root_url + "airports", //unfiltered
                                    {
                                        type: 'GET',
