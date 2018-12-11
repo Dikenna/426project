@@ -630,7 +630,9 @@ $(document).ready(function() {
                 if (array[i].last_name.includes("User")){
                   //nothing
                 } else {
-                  matchArray.push(array[i]);
+                  if (array[i].last_name.length < 3){
+                    matchArray.push(array[i]);
+                  }
                 }
               }
 
