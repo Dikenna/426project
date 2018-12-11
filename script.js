@@ -580,7 +580,7 @@ $(document).ready(function() {
                                    "seat_id" : 5520
                                    }
                                }
-                  if (itemName != "" && priceWillReq != "" && airport_id != ""  && !Number.isNaN(parseInt(askPrice))) {
+                  if (itemName != "" && priceWillReq != "" && airport_id != ""  && !Number.isNaN(parseInt(priceWillReq))) {
                     // POST new ticket with given info from user
                     $.ajax(root_url + "/tickets?" , {
                           type: 'POST',
