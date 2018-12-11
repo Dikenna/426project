@@ -406,8 +406,6 @@ $(document).ready(function() {
     reqdiv.append('<div id = "req_flightlist"></div>');
     reqFlightList = $('#req_flightlist');
 
-    let airport_id = currentAirportRequestPage.id;
-
       // give user the option to add a new flight if their preference is not there
       let makeFlight = $('<input class="reqbutton" type="radio" name="flightNew" id="newFlight"> Add New Flight <br>');
       reqdiv.append(makeFlight);
@@ -507,7 +505,7 @@ $(document).ready(function() {
                 "number":       "request",
                 "plane_id":     2249,
                 "departure_id": 134212,
-                "arrival_id":   airport_id
+                "arrival_id":   currentAirportRequestPage.id
               }
             }
           // POST new flight to API
@@ -517,7 +515,7 @@ $(document).ready(function() {
                data: flightData,
                xhrFields: {withCredentials: true},
                success: (response) => {
-                 make_flight_list(currentAirportRequestPage.id);
+                 
                  // make new instance of the flight
                  let instanceData = {
                    "instance" : {
@@ -532,6 +530,7 @@ $(document).ready(function() {
                     data: instanceData,
                    xhrFields: {withCredentials: true},
                    success: (response) => {
+			make_flight_list(currentAirportRequestPage.id);
                    }
                  });
                }
@@ -1395,7 +1394,7 @@ $("#pokemonButton").on("click", function(){ //third party api
                                        let flightRay = response;
                                        for (let p = 0; p < flightRay.length; p++) {
                                          if (flightRay[p].id == instanceRay[j].flight_id) {
-                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].departure_id, //filtering ajax request on tickets
+                                           $.ajax(root_url + "airports?filter[id]=" + flightRay[p].arrival_id, //filtering ajax request on tickets
                                               {
                                                   type: 'GET',
                                                   dataType: 'json',
@@ -1403,13 +1402,13 @@ $("#pokemonButton").on("click", function(){ //third party api
                                                   success: (response) => {
                                                     let airRay = response;
                                                     for (let m = 0; m < airRay.length; m++) {
-                                                      if (airRay[m].id == flightRay[p].departure_id) {
+                                                      if (airRay[m].id == flightRay[p].arrival_id) {
                                                         let indFluff = $('<div id="indFluff"></div>');
                                                         indFluff.append(ticketArray[i]);
                                                         indFluff.append('<div id="itemNameReqMade"> Item: ' + ticketArray[i].first_name + '</div>');
                                                         indFluff.append('<div id="priceReqMade"> Price: ' + ticketArray[i].price_paid + '</div>');
                                                         indFluff.append('<div id="arrDateReqMade"> Arrival Date: ' + date + '</div>');
-                                                        indFluff.append('<div id="arrTimeReqMade"> Arrival Time: ' + flightRay[p].departs_at.slice(11, 16) + '</div>');
+                                                        indFluff.append('<div id="arrTimeReqMade"> Arrival Time: ' + flightRay[p].arrives_at.slice(11, 16) + '</div>');
                                                         indFluff.append('<div id="arrAirReqMade"> Arrival Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
                                                         newLine(indFluff);
                                                         $('#requestsMade').append(indFluff);
