@@ -209,7 +209,7 @@ $(document).ready(function() {
                                    "seat_id" : 5520
                                    }
                                }
-                  if (itemToSend != "" && askPrice != "" && airport_id != "") {
+                  if (itemToSend != "" && askPrice != "" && airport_id != "" && !Number.isNaN(parseInt(askPrice))) {
                     // POST new ticket with given info from user
                     $.ajax(root_url + "/tickets?" , {
                           type: 'POST',
@@ -221,7 +221,7 @@ $(document).ready(function() {
                           }
                      });
                  } else {
-                   alert("Please fill in all input boxes to make a request.");
+                   alert("Please fill in all input boxes with valid inputs to make a request.");
                  }
                }
         });
@@ -580,7 +580,7 @@ $(document).ready(function() {
                                    "seat_id" : 5520
                                    }
                                }
-                  if (itemName != "" && priceWillReq != "" && airport_id != "") {
+                  if (itemName != "" && priceWillReq != "" && airport_id != ""  && !Number.isNaN(parseInt(askPrice))) {
                     // POST new ticket with given info from user
                     $.ajax(root_url + "/tickets?" , {
                           type: 'POST',
@@ -592,7 +592,7 @@ $(document).ready(function() {
                           }
                      });
                  } else {
-                   alert("Please fill in all input boxes to make a request.");
+                   alert("Please fill in all input boxes with valid inputa to make a request.");
                  }
              }
         });
