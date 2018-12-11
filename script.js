@@ -1204,7 +1204,7 @@ $("#pokemonButton").on("click", function(){ //third party api
                                                         indTick.append('<div id="itemNameSale"> Item: ' + ticketArray[i].first_name + '</div>');
                                                         indTick.append('<div id="askingPriceSale"> Asking Price: ' + ticketArray[i].price_paid + '</div>');
                                                         indTick.append('<div id="depDateSale"> Depature Date: ' + date + '</div>');
-                                                        indTick.append('<div id="depTimeSale"> Departure Time: ' + flightRay[p].arrives_at.slice(11, 16) + '</div>');
+                                                        indTick.append('<div id="depTimeSale"> Departure Time: ' + flightRay[p].departs_at.slice(11, 16) + '</div>');
                                                         indTick.append('<div id="depAirSale"> Departure Airport: ' + airRay[m].name + " (" + airRay[m].code + ")" + '</div>');
                                                         newLine(indTick);
                                                         $('#upForSale').append(indTick);
