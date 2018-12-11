@@ -3,7 +3,7 @@ $(document).ready(function() {
     let main = $('#main');
     var root_url = "http://comp426.cs.unc.edu:3001/";
     $('#bright').prop("checked", true);
-    let currentGenderVal = "bright";
+    let currentGenderVal, gender = "bright";
 
     buildHome();
 
@@ -737,7 +737,7 @@ $(document).ready(function() {
                           instance_id = instance.id;
                         //get tickets of that array
 
-                         $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[gender]=" + currentGenderVal + "&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
+                         $.ajax(root_url + "tickets?filter[is_purchased]=0.0&filter[gender]=" + gender + "&filter[instance_id]=" + instance_id, //filtering ajax request on tickets
                             {
                                 type: 'GET',
                                 dataType: 'json',
@@ -1027,7 +1027,7 @@ $(document).ready(function() {
 
 $("#pokemonButton").on("click", function(){ //third party api
 
-        if (currentGenderVal == "dark"){
+        if (gender == "dark"){
             $.ajax("https://pokeapi.co/api/v2/type/17/", //dark type
             {
                 type: 'GET',
@@ -1438,19 +1438,19 @@ $("#pokemonButton").on("click", function(){ //third party api
     mythingsdiv.append($('<div class = "client-items"></div>'));
     $('.client-items').append($('<h1 class = "sell"> Up For Sale </h1>'));
     $('.sell').append($('<div class = "mythings" id="upForSale"></div>'));
-    make_upForSale_list(currentGenderVal, root_url);
+    make_upForSale_list(gender, root_url);
 
     $('.client-items').append($('<h1 class= "fulfill"> Fulfilled Requests </h1>'));
     $('.fulfill').append($('<div class = "mythings" id="fulfilledReq"></div>'));
-    make_fulfilled_list(currentGenderVal, root_url);
+    make_fulfilled_list(gender, root_url);
 
     $('.client-items').append($('<h1 class = "ordered"> Ordered </h1>'));
     $('.ordered').append($('<div class = "mythings"  id="order"></div>'));
-    make_order_list(currentGenderVal, root_url);
+    make_order_list(gender, root_url);
 
     $('.client-items').append($('<h1 class = "requestsMade"> Requests Made </h1>'));
     $('.requestsMade').append($('<div class = "mythings" id="requestsMade"></div>'));
-    make_requestMade_list(currentGenderVal, root_url);
+    make_requestMade_list(gender, root_url);
   }
 
   function darkBrightHandler(gender){
