@@ -24,6 +24,7 @@ $(document).ready(function() {
         });
 
         let airports = [];
+
         $.ajax(root_url + "airports", //unfiltered
                                    {
                                        type: 'GET',
@@ -39,6 +40,7 @@ $(document).ready(function() {
 
   let currentName = "User";
   $('.rbutton').on('click', function() {
+
     gender = $(this).val();
     darkBrightHandler(gender);
   });
