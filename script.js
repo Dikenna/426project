@@ -592,7 +592,7 @@ $(document).ready(function() {
                           }
                      });
                  } else {
-                   alert("Please fill in all input boxes with valid inputa to make a request.");
+                   alert("Please fill in all input boxes with valid inputs to make a request.");
                  }
              }
         });
