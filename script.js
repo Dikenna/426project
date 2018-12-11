@@ -103,7 +103,7 @@ $(document).ready(function() {
     //jess autocomplete
     let autoCompleteDiv = $('<div class="autocomplete"></div>'); //added jess
 
-    let airportDepart = $('<input type="text" id="depAirportInput" class="sendAirport" placeholder="Departure Airport" searchBar2> </input>');
+    let airportDepart = $('<input type="text" id="depAirportInput" class="sendAirport" placeholder="Departure Airport" searchBar2> </input><br>');
     autoCompleteDiv.append(airportDepart);
     inputdiv.append(autoCompleteDiv);
     inputdiv.append('<br>');
@@ -158,7 +158,7 @@ $(document).ready(function() {
                 $(".temp").remove();
             }
     }); //end of autocomplete #2
-    inputdiv.append(airportDepart);
+    //inputdiv.append(airportDepart);
 
     let itemToSendInput = $('<input type="text" placeholder="Item to send"> </input>');
     inputdiv.append(itemToSendInput);
@@ -326,7 +326,7 @@ $(document).ready(function() {
     reqdiv.append('<div id="req_div_textholder"> </div> ');
     req_div_textholder = $('#req_div_textholder');
 
-    let airportInput = $('<input type="text" id="airportInput" class="req" placeholder="Arrival airport" searchBar2> </input>'); // user types in arrival airport
+    let airportInput = $('<input type="text" id="airportInput" class="req" placeholder="Arrival airport" searchBar2> </input><br>'); // user types in arrival airport
     autoCompleteDiv.append(airportInput);  //new
 
     req_div_textholder.append(autoCompleteDiv);
