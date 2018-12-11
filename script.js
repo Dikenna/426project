@@ -3,7 +3,7 @@ $(document).ready(function() {
     let main = $('#main');
     var root_url = "http://comp426.cs.unc.edu:3001/";
     $('#bright').prop("checked", true);
-    let currentGenderVal, gender = "bright";
+    let gender = "bright";
 
     buildHome();
 
