@@ -188,6 +188,9 @@ $(document).ready(function() {
         let airport_id = currentAirportRequestPage.id;
         let flight_id = $("input[name='flightS']:checked").val();
 
+	if (flight_id == undefined) {
+        	alert("Please choose a flight");
+      	}  else {
         // keep this part
         $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
                {
@@ -225,6 +228,7 @@ $(document).ready(function() {
                  }
                }
         });
+	}
     });
   darkBrightHandler(gender);
   });
@@ -558,6 +562,10 @@ $(document).ready(function() {
       // keep everything in here -- this fixed the glitch
       let airport_id = currentAirportRequestPage.id;
       let flight_id = $("input[name='flightR']:checked").val();
+	    
+      if (flight_id == undefined) {
+        alert("Please choose a flight");
+      }  else {
       $.ajax(root_url + "instances?filter[flight_id]=" + flight_id,
              {
              type: 'GET',
@@ -596,6 +604,7 @@ $(document).ready(function() {
                  }
              }
         });
+      }
     });
     darkBrightHandler(gender);
   });
